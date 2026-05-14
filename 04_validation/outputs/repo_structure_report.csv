@@ -1,0 +1,15 @@
+check,status,severity,expected,found,message
+required_dir:00_catalogos,PASS,INFO,exists,exists,Directorio requerido presente.
+required_dir:01_manifest,PASS,INFO,exists,exists,Directorio requerido presente.
+required_dir:02_inputs_xml,PASS,INFO,exists,exists,Directorio requerido presente.
+required_dir:03_expected,PASS,INFO,exists,exists,Directorio requerido presente.
+required_dir:04_validation,PASS,INFO,exists,exists,Directorio requerido presente.
+required_dir:05_scripts,PASS,INFO,exists,exists,Directorio requerido presente.
+required_file:01_manifest/case_manifest_100_full_v6.csv,PASS,INFO,exists,exists,Archivo requerido presente.
+required_file:03_expected/expected_outputs.csv,PASS,INFO,exists,exists,Archivo requerido presente.
+required_file:00_catalogos/catalogo_rutas_arbol_expandido_general_post_full_with_bt_control.csv,PASS,INFO,exists,exists,Archivo requerido presente.
+required_file:00_catalogos/patrono_catalog.csv,PASS,INFO,exists,exists,Archivo requerido presente.
+route_folder_count,PASS,INFO,222,222,Conteo de carpetas de ruta.
+xml_total_count,PASS,INFO,22200,22200,Conteo total de XMLs.
+xml_count_per_route,PASS,INFO,100,100,Todas las rutas tienen el conteo esperado de XMLs.
+max_path_length,PASS,INFO,<=259,82,02_inputs_xml/GPA-027__R2-012__R1-003/0089.xml

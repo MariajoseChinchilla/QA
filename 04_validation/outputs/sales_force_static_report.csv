@@ -1,0 +1,3 @@
+hash_type,activo_financiero_hash,status,severity,case_count,sample_case_id,sample_input_xml_path,cn_count,abf_count,message
+normalized,b4d31e5a65be675829ed8b9198e5d2f36bc1655602a75507c5e58619fb9313e2,PASS,INFO,22200,GPA-001__R2-001__R1-001__0001,02_inputs_xml/GPA-001__R2-001__R1-001/0001.xml,53,212,Hash normalizado unico.
+raw,768fc787d04e7f9d75721f42ec5619b93c87031b2d46783d9d98e5c229d8aea5,PASS,INFO,22200,GPA-001__R2-001__R1-001__0001,02_inputs_xml/GPA-001__R2-001__R1-001/0001.xml,53,212,Hash raw unico.

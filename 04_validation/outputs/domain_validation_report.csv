@@ -1,0 +1,2 @@
+case_id,expanded_route_id,input_xml_path,status,severity,location,field,value,allowed,message
+,,,PASS,INFO,,,,,No se encontraron valores fuera de dominio.
