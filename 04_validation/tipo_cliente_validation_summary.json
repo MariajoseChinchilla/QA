@@ -1,0 +1,12 @@
+{
+  "tipo_cliente_cases_generated": 22200,
+  "tipo_cliente_cases_passed_validation": 22200,
+  "tipo_cliente_validation_failed_cases": 0,
+  "tipo_cliente_validation_pass_rate": 1.0,
+  "route_tipo_failures": {},
+  "business_rule": [
+    "CE: al menos un crédito con estado D.",
+    "CR: existen créditos y todos están en estado C.",
+    "CN: sin créditos en ActivoCrediticio."
+  ]
+}

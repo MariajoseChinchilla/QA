@@ -1,0 +1,6 @@
+patronoCod,patronoNombre,appears_in_specialist_fields
+P001,patrono1,Si
+P002,patrono2,Si
+P003,patrono3,Si
+P004,patrono4,No
+P999,patrono_sin_especialista,No

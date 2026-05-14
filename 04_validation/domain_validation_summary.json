@@ -1,0 +1,220 @@
+{
+  "domain_validation_failed_sampled_cases": 0,
+  "sampled_case_count_for_domain_validation": 72,
+  "domain_failure_samples": [],
+  "domain_values_observed": {
+    "creditoEstado": {
+      "C": 108,
+      "D": 28
+    },
+    "creditoBanca": {
+      "banca_personas": 136
+    },
+    "creditoTipoCliente": {
+      "CR": 108,
+      "CE": 28
+    },
+    "creditoRegion": {
+      "Nor_oriente": 66,
+      "Metropolitana": 70
+    },
+    "participanteLaborEstado": {
+      "Alta": 136
+    },
+    "participanteLaborBanca": {
+      "banca_personas": 135,
+      "banca_trabajadores": 1
+    },
+    "participanteLaborRegion": {
+      "Metropolitana": 127,
+      "Nor_oriente": 9
+    },
+    "participanteLaborVacacion": {
+      "0": 136
+    },
+    "participanteLaborTipo": {
+      "abf": 126,
+      "cp": 10
+    },
+    "clienteRegion": {
+      "Nor_oriente": 59,
+      "Metropolitana": 13
+    },
+    "clienteEsSugerido": {
+      "No": 72
+    },
+    "clienteEstabaAsignadoAbf": {
+      "No": 60,
+      "Si": 12
+    },
+    "clienteFueDesembolsadoEnElUltimoMes": {
+      "No": 60,
+      "Si": 12
+    },
+    "cnEstado": {
+      "Alta": 3744,
+      "Baja": 72
+    },
+    "cnRegion": {
+      "Nor_oriente": 1872,
+      "Metropolitana": 1080,
+      "Sur_occidente": 864
+    },
+    "asignadoEstado": {
+      "Alta": 11232,
+      "Baja": 4032
+    },
+    "asignadoEnVacacion": {
+      "0": 15264
+    },
+    "asignadoBanca": {
+      "banca_personas": 14904,
+      "banca_trabajadores": 360
+    },
+    "asignadoBolsonEstado": {
+      "Equilibrio": 7992,
+      "Exceso": 2880,
+      "Deficit": 4392
+    },
+    "abfSugeridoEstado": {
+      "Baja": 72
+    },
+    "abfSugeridoBanca": {
+      "banca_personas": 72
+    },
+    "abfSugeridoRegion": {
+      "Nor_oriente": 59,
+      "Metropolitana": 13
+    },
+    "abfSugeridoOportunidad": {
+      "No_Sugerido": 72
+    },
+    "esTrabajadorInterno": {
+      "N": 72
+    },
+    "cnCosechaEstado": {
+      "Alta": 134,
+      "Baja": 2
+    },
+    "cnCosechaRegion": {
+      "Metropolitana": 125,
+      "Nor_oriente": 11
+    }
+  },
+  "domain_rules": {
+    "creditoEstado": [
+      "C",
+      "D"
+    ],
+    "creditoBanca": [
+      "banca_personas",
+      "banca_trabajadores"
+    ],
+    "creditoTipoCliente": [
+      "CE",
+      "CN",
+      "CR"
+    ],
+    "creditoRegion": [
+      "Metropolitana",
+      "Nor_oriente",
+      "Sur_occidente"
+    ],
+    "participanteLaborEstado": [
+      "Alta",
+      "Baja"
+    ],
+    "participanteLaborBanca": [
+      "banca_personas",
+      "banca_trabajadores"
+    ],
+    "participanteLaborRegion": [
+      "Metropolitana",
+      "Nor_oriente",
+      "Sur_occidente"
+    ],
+    "participanteLaborVacacion": [
+      "0",
+      "1"
+    ],
+    "participanteLaborTipo": [
+      "abf",
+      "cn",
+      "cp"
+    ],
+    "clienteRegion": [
+      "Metropolitana",
+      "Nor_oriente",
+      "Sur_occidente"
+    ],
+    "clienteEsSugerido": [
+      "No",
+      "Si"
+    ],
+    "clienteEstabaAsignadoAbf": [
+      "No",
+      "Si"
+    ],
+    "clienteFueDesembolsadoEnElUltimoMes": [
+      "No",
+      "Si"
+    ],
+    "cnEstado": [
+      "Alta",
+      "Baja"
+    ],
+    "cnRegion": [
+      "Metropolitana",
+      "Nor_oriente",
+      "Sur_occidente"
+    ],
+    "asignadoEstado": [
+      "Alta",
+      "Baja"
+    ],
+    "asignadoEnVacacion": [
+      "0",
+      "1"
+    ],
+    "asignadoBanca": [
+      "banca_personas",
+      "banca_trabajadores"
+    ],
+    "asignadoBolsonEstado": [
+      "Deficit",
+      "Equilibrio",
+      "Exceso"
+    ],
+    "abfSugeridoEstado": [
+      "Alta",
+      "Baja"
+    ],
+    "abfSugeridoBanca": [
+      "banca_personas",
+      "banca_trabajadores"
+    ],
+    "abfSugeridoRegion": [
+      "Metropolitana",
+      "Nor_oriente",
+      "Sur_occidente"
+    ],
+    "abfSugeridoOportunidad": [
+      "No_Sugerido",
+      "Sugerido"
+    ],
+    "esTrabajadorInterno": [
+      "N",
+      "S"
+    ],
+    "cnCosechaEstado": [
+      "Alta",
+      "Baja"
+    ],
+    "cnCosechaRegion": [
+      "Metropolitana",
+      "Nor_oriente",
+      "Sur_occidente"
+    ]
+  },
+  "note": "Validación muestral contra valores de requerimiento. creditoEstado permite C y D por regla de negocio indicada."
+}
