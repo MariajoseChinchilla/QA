@@ -30,7 +30,7 @@ FIELD_CONTRACT = BASE / '00_catalogos' / 'field_contract_arbol_expandido_general
 SCENARIOS = BASE / '00_catalogos' / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 ARCHIVE = BASE / 'qa100_v6.tar.zst'
 ROOT_NAME = 'qa100'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V11_SUGERIDO_EQUALS_CLIENT_ASSIGNMENT_LABOR_REGION_2026_05_15'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V12_GENERAL_POST_TREE_ALIGNMENT_2026_05_15'
 RUN_DATE = '2026-05-14'
 
 # Patronos finitos. Los campos especialistaPatrono1/2/3 contienen NOMBRES de patrono.
@@ -96,6 +96,8 @@ REPLICAS_PER_GROUP_VARIANT = 3
 
 CURRENT_ASSIGNMENT_CN = '1001'
 CURRENT_ASSIGNMENT_ABF = '500001'
+CURRENT_ASSIGNMENT_ABF_BAJA = '500002'
+CURRENT_ASSIGNMENT_ABF_VACATION = '500004'
 DIRECT_COSECHA_CN = '1010'
 LABOR_CN = '1020'
 LABOR_ABF_ALTA = '600001'
@@ -206,6 +208,16 @@ def group_requires_desembolso(route: dict) -> bool:
         return True
     return False
 
+def candidate_group_region(route: dict) -> str:
+    gen = qa.parse_general_decisions(route.get('general_decision_path_codes', ''))
+    if gen.get('D04') == 'SI' or gen.get('D27') == 'SI':
+        return 'Metropolitana'
+    if gen.get('D18') == 'SI':
+        return 'Nor_oriente'
+    if gen.get('D04') == 'NO':
+        return 'Nor_oriente'
+    return 'Nor_oriente'
+
 def group_location_kind(route: dict) -> str:
     fc = route.get('final_output_class_id','')
     scope = route.get('candidate_scope','').lower()
@@ -225,9 +237,10 @@ def candidate_group_key(route: dict) -> str | None:
         return None
     patrono = 'PATRONO' if group_requires_patrono(route) else 'ABFS'
     hist = 'HIST' if group_requires_desembolso(route) else 'NOHIST'
+    region = candidate_group_region(route).upper()
     # Se mantiene un número controlado de grupos para que cada XML siga siendo manejable.
     # La variación de municipios se logra con 3 CNs alternos por grupo/variante.
-    return f'{patrono}_{hist}'
+    return f'{patrono}_{hist}_{region}'
 
 def load_catalog() -> dict[str, dict]:
     with CATALOG.open(newline='', encoding='utf-8-sig') as f:
@@ -300,9 +313,9 @@ def base_abfs_for_cn(key: str, cod: str) -> list[dict]:
     if key == 'ASIGNACION_ACTUAL':
         return [
             make_abf(CURRENT_ASSIGNMENT_ABF,'Alta',BANCA_PERSONAS,39,'Equilibrio',False),
-            make_abf('500002','Baja',BANCA_PERSONAS,43,'Equilibrio',False),
+            make_abf(CURRENT_ASSIGNMENT_ABF_BAJA,'Baja',BANCA_PERSONAS,43,'Equilibrio',False),
             make_abf('500003','Alta',BANCA_TRABAJADORES,41,'Equilibrio',False),
-            make_abf('500004','Alta',BANCA_PERSONAS,57,'Exceso',False),
+            make_abf(CURRENT_ASSIGNMENT_ABF_VACATION,'Alta',BANCA_PERSONAS,57,'Exceso',False,vac='1'),
         ]
     if key == 'COSECHA_DIRECTA':
         return [
@@ -343,6 +356,7 @@ def build_static_catalog(catalog: dict[str,dict]) -> tuple[list[dict], dict[tupl
                 'patrono': group_requires_patrono(route),
                 'requires_desembolso': group_requires_desembolso(route),
                 'location_kind': group_location_kind(route),
+                'region': candidate_group_region(route),
                 'route_example': er,
             }
     cns=[]
@@ -354,7 +368,7 @@ def build_static_catalog(catalog: dict[str,dict]) -> tuple[list[dict], dict[tupl
     group_idx = 0
     for pg, meta in sorted(parent_meta.items()):
         group_idx += 1
-        region = REGION_VALUES[group_idx % len(REGION_VALUES)]
+        region = meta['region']
         for rid, (var, label) in R1_VARIANTS.items():
             for rep in range(1, REPLICAS_PER_GROUP_VARIANT + 1):
                 code_int = 30000 + group_idx * 100 + VARIANT_NUM[var] * 10 + rep
@@ -439,6 +453,34 @@ def labor_abf_for_context(ctx: dict, by_code: dict[str,dict]) -> tuple[dict, dic
         if abf['asignadoCod'] == abf_code:
             return cn, abf
     raise KeyError(f"No labor ABF for region={region_name}, estado={estado_key}, banca={banca_key}")
+
+def current_assignment_for_context(ctx: dict, target_cn: str|None=None) -> tuple[str, str, bool]:
+    gen = ctx.get('general_decisions', {})
+    if gen.get('D06') == 'SI' and target_cn:
+        return target_cn, f'{target_cn}04', True
+    if gen.get('D06') == 'NO':
+        return CURRENT_ASSIGNMENT_CN, CURRENT_ASSIGNMENT_ABF_BAJA, True
+    if ctx.get('assigned_yes'):
+        abf = CURRENT_ASSIGNMENT_ABF_VACATION if gen.get('D16') == 'SI' or gen.get('D34') == 'SI' else CURRENT_ASSIGNMENT_ABF
+        return CURRENT_ASSIGNMENT_CN, abf, True
+    if gen.get('D22') == 'SI':
+        return DIRECT_COSECHA_CN, '-1', False
+    return '-1', '-1', False
+
+def harvest_cn_for_context(ctx: dict, route: dict, target_cn: str|None, by_code: dict[str,dict]) -> dict:
+    gen = ctx.get('general_decisions', {})
+    direct_general_r1 = is_r1_route(ctx['expanded_route_id']) and '__R2-' not in ctx['expanded_route_id'] and '__R3-' not in ctx['expanded_route_id']
+    if target_cn and direct_general_r1 and (gen.get('D07') == 'SI' or gen.get('D10') == 'SI' or gen.get('D21') == 'SI'):
+        return by_code[target_cn]
+    if ctx.get('cn_cosecha_estado') == 'BAJA':
+        return by_code[CERRADO_CN]
+    region = norm_region(ctx.get('cn_cosecha_region', 'Metropolitana'))
+    cn_by_region = {
+        'Metropolitana': DIRECT_COSECHA_CN,
+        'Nor_oriente': LABOR_BY_REGION['Nor_oriente']['cn'],
+        'Sur_occidente': LABOR_BY_REGION['Sur_occidente']['cn'],
+    }
+    return by_code[cn_by_region.get(region, DIRECT_COSECHA_CN)]
 
 def target_group(ctx: dict, route: dict, group_variant_to_cns: dict[tuple[str,str],list[str]]) -> tuple[str|None, str|None, str|None]:
     rid = r1_id(ctx['expanded_route_id'])
@@ -535,12 +577,12 @@ def target_abfs_for_expected(cn: dict, patrono_filter: bool, rid: str, cliente_p
         out.append(a['asignadoCod'])
     return out
 
-def main_credit(ctx: dict, route: dict, by_code: dict[str,dict]) -> dict:
+def main_credit(ctx: dict, route: dict, target_cn: str|None, by_code: dict[str,dict]) -> dict:
     bt = ctx['final_output_class_id'] == 'CONTROL_BT'
     credito_banca = BANCA_TRABAJADORES if bt else BANCA_PERSONAS
     labor_type = {'ABF':'abf','CN':'cn','CP':'cp','abf':'abf','cn':'cn','cp':'cp'}.get(ctx['labor_type'], 'abf')
-    cosecha_code = DIRECT_COSECHA_CN
-    cosecha = by_code[cosecha_code]
+    cosecha = harvest_cn_for_context(ctx, route, target_cn, by_code)
+    cosecha_code = cosecha['cod']
     labor_cn_obj, labor_abf = labor_abf_for_context(ctx, by_code)
     labor_code = labor_abf['asignadoCod']
     labor_estado = labor_abf['asignadoEstado']
@@ -549,12 +591,27 @@ def main_credit(ctx: dict, route: dict, by_code: dict[str,dict]) -> dict:
     labor_region = labor_cn_obj['region']
     labor_municipio = labor_cn_obj['municipio']
     labor_age = labor_abf['asignadoEdad']
+    if ctx['general_decisions'].get('D25') == 'SI':
+        current_cn, current_abf, has_current_abf = current_assignment_for_context(ctx, target_cn)
+        current_cn_obj = by_code.get(current_cn)
+        current_abf_obj = None
+        if current_cn_obj:
+            current_abf_obj = next((a for a in current_cn_obj['abfs'] if a['asignadoCod'] == current_abf), None)
+        if has_current_abf and current_cn_obj and current_abf_obj:
+            labor_type = 'abf'
+            labor_code = current_abf
+            labor_estado = current_abf_obj['asignadoEstado']
+            labor_banca = current_abf_obj['asignadoBanca']
+            labor_cn = current_cn
+            labor_region = current_cn_obj['region']
+            labor_municipio = current_cn_obj['municipio']
+            labor_age = current_abf_obj['asignadoEdad']
     if ctx['labor_type'] == 'CP':
         labor_type = 'cp'; labor_code = CP_CN; labor_cn = CP_CN; labor_age='0'
         labor_region = by_code[CP_CN]['region']; labor_municipio = by_code[CP_CN]['municipio']; cosecha_code = CP_CN; cosecha = by_code[cosecha_code]
     elif ctx['labor_type'] == 'CN':
-        labor_type = 'cn'; labor_code = DIRECT_COSECHA_CN; labor_cn = DIRECT_COSECHA_CN; labor_age='0'
-        labor_region = by_code[DIRECT_COSECHA_CN]['region']; labor_municipio = by_code[DIRECT_COSECHA_CN]['municipio']
+        labor_type = 'cn'; labor_code = cosecha['cod']; labor_cn = cosecha['cod']; labor_age='0'
+        labor_region = cosecha['region']; labor_municipio = cosecha['municipio']
     if ctx['cn_cosecha_estado'] == 'BAJA':
         cosecha_code = CERRADO_CN; cosecha = by_code[cosecha_code]
     fecha = '2026-05-01' if ctx['harvest_last_month'] else '2025-01-15'
@@ -632,7 +689,7 @@ def build_creditos(ctx: dict, route: dict, target_cn: str|None, by_code: dict[st
     # Cliente nuevo: sin historial de créditos en ActivoCrediticio.
     if ctx.get('tipo_cliente') == 'CN':
         return []
-    creditos=[main_credit(ctx, route, by_code)]
+    creditos=[main_credit(ctx, route, target_cn, by_code)]
     rid = r1_id(ctx['expanded_route_id'])
     if target_cn and group_requires_desembolso(route):
         # Para rutas de desembolso, se agrega historial en el municipio/CN correcto. Para variantes con empate,
@@ -650,9 +707,7 @@ def build_xml(ctx: dict, route: dict, creditos: list[dict], target_cn: str|None,
     cf = stable_client_fields(ctx)
     gen = ctx['general_decisions']
     bt = ctx['final_output_class_id'] == 'CONTROL_BT'
-    assigned_yes = bool(ctx['assigned_yes'])
-    current_cn = CURRENT_ASSIGNMENT_CN if assigned_yes else (DIRECT_COSECHA_CN if gen.get('D22') == 'SI' else '-1')
-    current_abf = CURRENT_ASSIGNMENT_ABF if assigned_yes else '-1'
+    current_cn, current_abf, has_current_abf = current_assignment_for_context(ctx, target_cn)
     cliente_region = norm_region(ctx['client_region'])
     vivienda, trabajo = client_locations(ctx, route, target_cn, by_code)
     suggested = suggested_abf_fields(current_cn, current_abf, by_code) if gen.get('D15') == 'SI' else suggested_abf_fields('', '', by_code)
@@ -668,7 +723,7 @@ def build_xml(ctx: dict, route: dict, creditos: list[dict], target_cn: str|None,
         tag('clienteMunicipioVivienda', vivienda),
         tag('clienteMunicipioTrabajo', trabajo),
         tag('clienteEsSugerido', req_bool(gen.get('D15') == 'SI')),
-        tag('clienteEstabaAsignadoAbf', req_bool(assigned_yes)),
+        tag('clienteEstabaAsignadoAbf', req_bool(has_current_abf)),
         tag('clienteEsCarteraDelCnCod', current_cn),
         tag('clienteFueDesembolsadoEnElUltimoMes', req_bool(bool(ctx['harvest_last_month']))),
         tag('clienteEsCarteraDelAbfCod', current_abf),
@@ -694,6 +749,7 @@ def build_xml(ctx: dict, route: dict, creditos: list[dict], target_cn: str|None,
 def build_expected(ctx: dict, route: dict, target_cn: str|None, by_code: dict[str,dict]) -> dict:
     cf = stable_client_fields(ctx)
     fc = ctx['final_output_class_id']
+    current_cn, current_abf, _has_current_abf = current_assignment_for_context(ctx, target_cn)
     expected = {
         'case_id': ctx['case_id'],
         'expanded_route_id': ctx['expanded_route_id'],
@@ -703,8 +759,8 @@ def build_expected(ctx: dict, route: dict, target_cn: str|None, by_code: dict[st
         'final_output_class_id': fc,
         'codCliente': cf['clienteCod'],
         'dpiCliente': cf['clienteDpi'],
-        'codCnAnterior': CURRENT_ASSIGNMENT_CN,
-        'codAbfAnterior': CURRENT_ASSIGNMENT_ABF if ctx['assigned_yes'] else '-1',
+        'codCnAnterior': current_cn,
+        'codAbfAnterior': current_abf,
         'codCnActual': '',
         'codAbfActual': '',
         'bolson': '',
@@ -737,8 +793,8 @@ def build_expected(ctx: dict, route: dict, target_cn: str|None, by_code: dict[st
             expected['codAbfActual'] = accepted[0] if accepted else ''
             expected['expected_description'] = 'Asignar al ABF candidato único esperado.'
     elif fc in {'KEEP_CURRENT_ASSIGNMENT', 'KEEP_ABF_ASSIGNMENT'}:
-        expected['codCnActual'] = CURRENT_ASSIGNMENT_CN if ctx['assigned_yes'] else DIRECT_COSECHA_CN
-        expected['codAbfActual'] = CURRENT_ASSIGNMENT_ABF if ctx['assigned_yes'] else '-1'
+        expected['codCnActual'] = current_cn
+        expected['codAbfActual'] = current_abf
         expected['expected_description'] = 'Mantener asignación actual.'
     elif fc in {'ASSIGN_NEW_ABF','ASSIGN_NEW_ABF_CANCEL_NEW_CN','ASSIGN_LAST_DISB_ABF','ASSIGN_LAST_DISB_ABF_CANCEL_LAST_CN','ASSIGN_HARVEST_ABF'}:
         labor_cn, labor_abf = labor_abf_for_context(ctx, by_code)
@@ -746,7 +802,7 @@ def build_expected(ctx: dict, route: dict, target_cn: str|None, by_code: dict[st
         expected['codAbfActual'] = labor_abf['asignadoCod']
         expected['expected_description'] = 'Asignar al ABF que desembolsó; codCnActual es el CN laboral al que pertenece el ABF.'
     elif fc in {'ASSIGN_AGENCY_NEW_CN','ASSIGN_AGENCY_NEW_CN_CANCEL_NEW_CN'}:
-        expected['codCnActual'] = DIRECT_COSECHA_CN
+        expected['codCnActual'] = harvest_cn_for_context(ctx, route, target_cn, by_code)['cod']
         expected['codAbfActual'] = '-1'
         expected['expected_description'] = 'Asignar a cartera agencia del nuevo CN.'
     else:
@@ -1434,7 +1490,7 @@ def main_in_place(limit: int|None=None) -> None:
     random_summary={'random_cases_generated':random_cases,'random_candidate_rows_generated':random_candidate_rows,'random_routes':len(route_random_counts),'expected_correct_count_per_random_route':100}
     bt_summary={'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'bt_validation_pass_rate':None if bt_total==0 else round(bt_pass/bt_total,6)}
     generated_at = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.']}
+    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.','Alinea General post primera asignacion: ABF asignado en baja para D06, asesor asignado para D25, baja temporal D16/D34 y CN de cosecha por region/ruta.']}
     for path, data in [
         (BASE/'04_validation'/'generation_summary.json', summary),
         (BASE/'04_validation'/'domain_validation_summary.json', domain_summary),

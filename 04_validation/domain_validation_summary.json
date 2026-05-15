@@ -15,8 +15,8 @@
       "CE": 28
     },
     "creditoRegion": {
-      "Nor_oriente": 66,
-      "Metropolitana": 70
+      "Nor_oriente": 112,
+      "Metropolitana": 24
     },
     "participanteLaborEstado": {
       "Alta": 136
@@ -26,8 +26,8 @@
       "banca_trabajadores": 1
     },
     "participanteLaborRegion": {
-      "Nor_oriente": 66,
-      "Metropolitana": 70
+      "Nor_oriente": 112,
+      "Metropolitana": 24
     },
     "participanteLaborVacacion": {
       "0": 136
@@ -44,37 +44,38 @@
       "No": 72
     },
     "clienteEstabaAsignadoAbf": {
-      "No": 60,
-      "Si": 12
+      "No": 58,
+      "Si": 14
     },
     "clienteFueDesembolsadoEnElUltimoMes": {
       "No": 60,
       "Si": 12
     },
     "cnEstado": {
-      "Alta": 3888,
+      "Alta": 7344,
       "Baja": 72
     },
     "cnRegion": {
-      "Nor_oriente": 1944,
-      "Metropolitana": 1080,
-      "Sur_occidente": 936
+      "Nor_oriente": 3672,
+      "Metropolitana": 3672,
+      "Sur_occidente": 72
     },
     "asignadoEstado": {
-      "Alta": 11448,
-      "Baja": 4392
+      "Alta": 21816,
+      "Baja": 7848
     },
     "asignadoEnVacacion": {
-      "0": 15840
+      "0": 29592,
+      "1": 72
     },
     "asignadoBanca": {
-      "banca_personas": 15120,
+      "banca_personas": 28944,
       "banca_trabajadores": 720
     },
     "asignadoBolsonEstado": {
-      "Equilibrio": 8640,
-      "Exceso": 2808,
-      "Deficit": 4392
+      "Equilibrio": 15552,
+      "Exceso": 5400,
+      "Deficit": 8712
     },
     "abfSugeridoEstado": {
       "": 72
@@ -96,8 +97,8 @@
       "Baja": 2
     },
     "cnCosechaRegion": {
-      "Metropolitana": 125,
-      "Nor_oriente": 11
+      "Nor_oriente": 113,
+      "Metropolitana": 23
     }
   },
   "domain_rules": {
