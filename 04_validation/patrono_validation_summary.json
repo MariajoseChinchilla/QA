@@ -3,13 +3,5 @@
   "patrono_cases_passed_validation": 22200,
   "patrono_validation_failed_cases": 0,
   "patrono_validation_pass_rate": 1.0,
-  "route_patrono_failures": {},
-  "business_rule": "Se compara creditoPatrono contra especialistaPatrono1, especialistaPatrono2 o especialistaPatrono3. Los campos de especialista contienen nombres de patrono, no códigos.",
-  "finite_patronos_used": [
-    "patrono1",
-    "patrono2",
-    "patrono3",
-    "patrono4",
-    "patrono_sin_especialista"
-  ]
+  "route_patrono_failures": {}
 }

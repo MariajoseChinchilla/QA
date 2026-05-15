@@ -638,10 +638,8 @@ def build_expected(ctx: dict) -> dict:
 
 def build_xml(ctx: dict, cns: list[dict], creditos: list[dict]) -> str:
     assigned_abf_code = ctx['current_abf'] if ctx['assigned_yes'] else '-1'
-    abf_sugerido = ctx['current_abf'] if ctx['general_decisions'].get('D15') == 'SI' else '-1'
-    abf_sugerido_estado = 'ALTA' if abf_sugerido != '-1' else 'BAJA'
-    abf_sugerido_oportunidad = 'SUGERIDO' if ctx['general_decisions'].get('D15') == 'SI' else 'NO_SUGERIDO'
     current_cn = CN_CODES['ASIGNADO'] if ctx['assigned_yes'] else (CN_CODES['COSECHA'] if ctx['general_decisions'].get('D22') == 'SI' else '-1')
+    suggested = suggested_abf_fields(current_cn, assigned_abf_code, cns) if ctx['general_decisions'].get('D15') == 'SI' else suggested_abf_fields('', '', cns)
 
     parts = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
@@ -659,14 +657,14 @@ def build_xml(ctx: dict, cns: list[dict], creditos: list[dict]) -> str:
         tag('clienteEsCarteraDelCnCod', current_cn),
         tag('clienteFueDesembolsadoEnElUltimoMes', 'SI' if ctx['harvest_last_month'] else 'NO'),
         tag('clienteEsCarteraDelAbfCod', assigned_abf_code),
-        tag('abfSugeridoCod', abf_sugerido),
-        tag('abfSugeridoEstado', abf_sugerido_estado),
-        tag('abfSugeridoEdad', max(23, ctx['cliente_edad'] + 4)),
-        tag('abfSugeridoCnCod', CN_CODES['ASIGNADO']),
-        tag('abfSugeridoBanca', ctx['credito_banca'] if not ctx['client_is_bp'] else 'BANCA_PERSONAS'),
-        tag('abfSugeridoRegion', ctx['client_region']),
-        tag('abfSugeridoMunicipio', ctx['trabajo']),
-        tag('abfSugeridoOportunidad', abf_sugerido_oportunidad),
+        tag('abfSugeridoCod', suggested['abfSugeridoCod']),
+        tag('abfSugeridoEstado', suggested['abfSugeridoEstado']),
+        tag('abfSugeridoEdad', suggested['abfSugeridoEdad']),
+        tag('abfSugeridoCnCod', suggested['abfSugeridoCnCod']),
+        tag('abfSugeridoBanca', suggested['abfSugeridoBanca']),
+        tag('abfSugeridoRegion', suggested['abfSugeridoRegion']),
+        tag('abfSugeridoMunicipio', suggested['abfSugeridoMunicipio']),
+        tag('abfSugeridoOportunidad', suggested['abfSugeridoOportunidad']),
         tag('clienteDpi', ctx['dpi']),
         tag('esTrabajadorInterno', 'S' if ctx['general_decisions'].get('D03') == 'EMPLEADO' else 'N'),
         '<InformacionGeneral>' + tag('fecha', RUN_DATE) + '</InformacionGeneral>',
@@ -685,6 +683,46 @@ def build_xml(ctx: dict, cns: list[dict], creditos: list[dict]) -> str:
     parts.append('</ActivoFinanciero>')
     parts.append('</solicitud></rule:entryPointAdmonCarteraV2></soapenv:Body></soapenv:Envelope>')
     return ''.join(parts)
+
+
+def suggested_abf_fields(current_cn: str, current_abf: str, cns: list[dict]) -> dict[str, str]:
+    """ABF sugerido mirrors the client's assigned ABF, or stays fully blank."""
+    if current_cn in {'', '-1'} or current_abf in {'', '-1'}:
+        return {
+            'abfSugeridoCod': '',
+            'abfSugeridoEstado': '',
+            'abfSugeridoEdad': '',
+            'abfSugeridoCnCod': '',
+            'abfSugeridoBanca': '',
+            'abfSugeridoRegion': '',
+            'abfSugeridoMunicipio': '',
+            'abfSugeridoOportunidad': '',
+        }
+    for cn in cns:
+        if cn.get('cod') != current_cn:
+            continue
+        for abf in cn.get('abfs', []):
+            if abf.get('asignadoCod') == current_abf:
+                return {
+                    'abfSugeridoCod': current_abf,
+                    'abfSugeridoEstado': abf.get('asignadoEstado', ''),
+                    'abfSugeridoEdad': abf.get('asignadoEdad', ''),
+                    'abfSugeridoCnCod': current_cn,
+                    'abfSugeridoBanca': abf.get('asignadoBanca', ''),
+                    'abfSugeridoRegion': cn.get('region', ''),
+                    'abfSugeridoMunicipio': cn.get('municipio', ''),
+                    'abfSugeridoOportunidad': 'SUGERIDO',
+                }
+    return {
+        'abfSugeridoCod': '',
+        'abfSugeridoEstado': '',
+        'abfSugeridoEdad': '',
+        'abfSugeridoCnCod': '',
+        'abfSugeridoBanca': '',
+        'abfSugeridoRegion': '',
+        'abfSugeridoMunicipio': '',
+        'abfSugeridoOportunidad': '',
+    }
 
 
 def load_catalog() -> dict[str, dict]:

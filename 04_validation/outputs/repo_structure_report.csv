@@ -12,4 +12,4 @@ required_file:00_catalogos/patrono_catalog.csv,PASS,INFO,exists,exists,Archivo r
 route_folder_count,PASS,INFO,222,222,Conteo de carpetas de ruta.
 xml_total_count,PASS,INFO,22200,22200,Conteo total de XMLs.
 xml_count_per_route,PASS,INFO,100,100,Todas las rutas tienen el conteo esperado de XMLs.
-max_path_length,PASS,INFO,<=259,82,02_inputs_xml/GPA-027__R2-012__R1-003/0089.xml
+max_path_length,PASS,INFO,<=259,82,02_inputs_xml/GPA-001__R2-005__R1-003/0014.xml

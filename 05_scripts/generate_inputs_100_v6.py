@@ -2,24 +2,25 @@
 from __future__ import annotations
 import csv, hashlib, importlib.util, io, json, os, random, re, subprocess, tarfile, tempfile, time
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from xml.sax.saxutils import escape
 import xml.etree.ElementTree as ET
 
-BASE = Path('/mnt/data')
-BASE_GEN = BASE / 'generate_full_qa_xml_inputs.py'
+SCRIPT_DIR = Path(__file__).resolve().parent
+BASE = SCRIPT_DIR.parent
+BASE_GEN = SCRIPT_DIR / 'generate_full_qa_xml_inputs.py'
 spec = importlib.util.spec_from_file_location('qa_base_gen', BASE_GEN)
 qa = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(qa)  # type: ignore
 
-MANIFEST = BASE / 'case_manifest_100_full_inputs_xml.csv'
-CATALOG = BASE / 'catalogo_rutas_arbol_expandido_general_post_full_with_bt_control.csv'
-FIELD_CONTRACT = BASE / 'field_contract_arbol_expandido_general_post_primera_asignacion.csv'
-SCENARIOS = BASE / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
+MANIFEST = BASE / '01_manifest' / 'case_manifest_100_full_v6.csv'
+CATALOG = BASE / '00_catalogos' / 'catalogo_rutas_arbol_expandido_general_post_full_with_bt_control.csv'
+FIELD_CONTRACT = BASE / '00_catalogos' / 'field_contract_arbol_expandido_general_post_primera_asignacion.csv'
+SCENARIOS = BASE / '00_catalogos' / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 ARCHIVE = BASE / 'qa100_v6.tar.zst'
 ROOT_NAME = 'qa100'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V9_100_PER_ROUTE_PATRONO_RANDOM_TIPOCLIENTE_VARIATION_2026_05_14'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V10_100_PER_ROUTE_SUGERIDO_EQUALS_CLIENT_ASSIGNMENT_2026_05_14'
 RUN_DATE = '2026-05-14'
 
 # Patronos finitos. Los campos especialistaPatrono1/2/3 contienen NOMBRES de patrono.
@@ -66,6 +67,12 @@ DOMAIN_RULES = {
     'esTrabajadorInterno': {'S', 'N'},
     'cnCosechaEstado': {'Alta', 'Baja'},
     'cnCosechaRegion': {'Metropolitana', 'Nor_oriente', 'Sur_occidente'},
+}
+OPTIONAL_BLANK_DOMAIN_FIELDS = {
+    'abfSugeridoEstado',
+    'abfSugeridoBanca',
+    'abfSugeridoRegion',
+    'abfSugeridoOportunidad',
 }
 
 R1_VARIANTS = {
@@ -338,6 +345,42 @@ def centro_xml(cn: dict) -> str:
     parts.append('</CentroDeNegocio>')
     return ''.join(parts)
 
+def assigned_abf_details(current_cn: str, current_abf: str, by_code: dict[str,dict]) -> tuple[dict|None, dict|None]:
+    if current_cn in {'', '-1'} or current_abf in {'', '-1'}:
+        return None, None
+    cn = by_code.get(current_cn)
+    if not cn:
+        return None, None
+    for abf in cn.get('abfs', []):
+        if abf.get('asignadoCod') == current_abf:
+            return cn, abf
+    return cn, None
+
+def suggested_abf_fields(current_cn: str, current_abf: str, by_code: dict[str,dict]) -> dict[str, str]:
+    """ABF sugerido mirrors the client's assigned ABF, or stays fully blank."""
+    cn, abf = assigned_abf_details(current_cn, current_abf, by_code)
+    if not (cn and abf):
+        return {
+            'abfSugeridoCod': '',
+            'abfSugeridoEstado': '',
+            'abfSugeridoEdad': '',
+            'abfSugeridoCnCod': '',
+            'abfSugeridoBanca': '',
+            'abfSugeridoRegion': '',
+            'abfSugeridoMunicipio': '',
+            'abfSugeridoOportunidad': '',
+        }
+    return {
+        'abfSugeridoCod': current_abf,
+        'abfSugeridoEstado': abf.get('asignadoEstado', ''),
+        'abfSugeridoEdad': abf.get('asignadoEdad', ''),
+        'abfSugeridoCnCod': current_cn,
+        'abfSugeridoBanca': abf.get('asignadoBanca', ''),
+        'abfSugeridoRegion': cn.get('region', ''),
+        'abfSugeridoMunicipio': cn.get('municipio', ''),
+        'abfSugeridoOportunidad': 'Sugerido',
+    }
+
 def target_group(ctx: dict, route: dict, group_variant_to_cns: dict[tuple[str,str],list[str]]) -> tuple[str|None, str|None, str|None]:
     rid = r1_id(ctx['expanded_route_id'])
     pg = candidate_group_key(route)
@@ -556,10 +599,9 @@ def build_xml(ctx: dict, route: dict, creditos: list[dict], target_cn: str|None,
     assigned_yes = bool(ctx['assigned_yes'])
     current_cn = CURRENT_ASSIGNMENT_CN if assigned_yes else (DIRECT_COSECHA_CN if gen.get('D22') == 'SI' else '-1')
     current_abf = CURRENT_ASSIGNMENT_ABF if assigned_yes else '-1'
-    abf_sug = CURRENT_ASSIGNMENT_ABF if gen.get('D15') == 'SI' else '-1'
     cliente_region = norm_region(ctx['client_region'])
     vivienda, trabajo = client_locations(ctx, route, target_cn, by_code)
-    abf_sug_banca = BANCA_TRABAJADORES if bt else BANCA_PERSONAS
+    suggested = suggested_abf_fields(current_cn, current_abf, by_code) if gen.get('D15') == 'SI' else suggested_abf_fields('', '', by_code)
     parts = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
              '<soapenv:Header/>',
@@ -576,14 +618,14 @@ def build_xml(ctx: dict, route: dict, creditos: list[dict], target_cn: str|None,
         tag('clienteEsCarteraDelCnCod', current_cn),
         tag('clienteFueDesembolsadoEnElUltimoMes', req_bool(bool(ctx['harvest_last_month']))),
         tag('clienteEsCarteraDelAbfCod', current_abf),
-        tag('abfSugeridoCod', abf_sug),
-        tag('abfSugeridoEstado', 'Alta' if abf_sug != '-1' else 'Baja'),
-        tag('abfSugeridoEdad', '39'),
-        tag('abfSugeridoCnCod', CURRENT_ASSIGNMENT_CN),
-        tag('abfSugeridoBanca', abf_sug_banca),
-        tag('abfSugeridoRegion', cliente_region),
-        tag('abfSugeridoMunicipio', trabajo),
-        tag('abfSugeridoOportunidad', 'Sugerido' if gen.get('D15') == 'SI' else 'No_Sugerido'),
+        tag('abfSugeridoCod', suggested['abfSugeridoCod']),
+        tag('abfSugeridoEstado', suggested['abfSugeridoEstado']),
+        tag('abfSugeridoEdad', suggested['abfSugeridoEdad']),
+        tag('abfSugeridoCnCod', suggested['abfSugeridoCnCod']),
+        tag('abfSugeridoBanca', suggested['abfSugeridoBanca']),
+        tag('abfSugeridoRegion', suggested['abfSugeridoRegion']),
+        tag('abfSugeridoMunicipio', suggested['abfSugeridoMunicipio']),
+        tag('abfSugeridoOportunidad', suggested['abfSugeridoOportunidad']),
         tag('clienteDpi', cf['clienteDpi']),
         tag('esTrabajadorInterno', 'S' if gen.get('D03') == 'EMPLEADO' else 'N'),
         '<InformacionGeneral>' + tag('fecha', RUN_DATE) + '</InformacionGeneral>',
@@ -672,6 +714,8 @@ def validate_domains_from_xml(xml_bytes: bytes) -> tuple[dict[str, Counter], lis
         for elem in root.findall(f'.//{field}'):
             val = elem.text or ''
             values[field][val]+=1
+            if val == '' and field in OPTIONAL_BLANK_DOMAIN_FIELDS:
+                continue
             if val not in allowed:
                 failures.append({'field':field,'value':val,'allowed':'|'.join(sorted(allowed))})
     return values, failures
@@ -1182,6 +1226,175 @@ Resumen:
         shutil.rmtree(tmpdir, ignore_errors=True)
     print(json.dumps({'archive':str(ARCHIVE),'size_bytes':ARCHIVE.stat().st_size,'duration_seconds':round(time.time()-start,2),'total_xml_inputs_generated':counts['total_cases'],'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_passed':tipo_pass_count,'patrono_passed':patrono_pass_count,'random_cases':random_cases,'bt_cases_generated':bt_total,'bt_cases_passed_validation':bt_pass,'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'cn_count_distribution':dict(cn_count_values)}, ensure_ascii=False, indent=2), flush=True)
 
+def main_in_place(limit: int|None=None) -> None:
+    start=time.time()
+    catalog=load_catalog()
+    manifest_rows=load_manifest_rows(limit)
+    cns, group_variant_to_cns, by_code = build_static_catalog(catalog)
+    static_activo_financiero = '<ActivoFinanciero>' + ''.join(centro_xml(cn) for cn in cns) + '</ActivoFinanciero>'
+    static_hash = hashlib.sha256(static_activo_financiero.encode('utf-8')).hexdigest()
+
+    for rel in ['02_inputs_xml', '03_expected', '04_validation', '00_catalogos']:
+        (BASE / rel).mkdir(parents=True, exist_ok=True)
+    write_static_cn_catalog_csv(BASE / '00_catalogos' / 'cn_catalog.csv', cns)
+    write_patrono_catalog_csv(BASE / '00_catalogos' / 'patrono_catalog.csv')
+
+    expected_fields=['case_id','expanded_route_id','general_route_id','included_in_core','expected_mode','final_output_class_id','codCliente','dpiCliente','codCnActual','codAbfActual','codCnAnterior','codAbfAnterior','bolson','accepted_cod_cn_set','accepted_cod_abf_set','expected_control_tree','expected_description','is_random_selection','cliente_patrono','tipo_cliente_expected']
+    validation_fields=['case_id','expanded_route_id','general_route_id','final_output_class_id','input_xml_path','xml_generated','expected_generated','all_static_cn_catalog_present','cn_count','min_abfs_per_cn','max_abfs_per_cn','activo_financiero_hash','activo_financiero_hash_matches_static','domain_validation_pass','r2_case','r2_validation_pass','tipo_cliente_pass','patrono_validation_pass','bt_control_case','bt_credito_banca_ok','bt_expected_tree_ok','labor_cn','cosecha_cn','labor_cosecha_can_differ','cliente_edad','cliente_patrono','tipo_cliente_expected','target_cn','notes']
+    r2_fields=['case_id','expanded_route_id','input_xml_path','r2_decisions','clienteMunicipioVivienda','clienteMunicipioTrabajo','target_cn','target_cn_municipio','target_cn_departamento','has_hist_vivienda','has_hist_trabajo','target_has_patrono_specialist','cliente_patrono','r2_pass','notes']
+    tipo_fields=['case_id','expanded_route_id','input_xml_path','tipo_cliente_expected','tipo_cliente_derived','tipo_cliente_pass','credit_states','history_credit_count','rule_note']
+    patrono_fields=['case_id','expanded_route_id','input_xml_path','cliente_patrono','expected_specialist_answer','global_abf_specialist_exists','target_scope_specialist_exists','patrono_validation_pass','patrono_field_rule']
+    bt_fields=['case_id','input_xml_path','credito_banca_values','abf_sugerido_banca','expected_control_tree','pass_bt_validation']
+    rand_case_fields=['case_id','expanded_route_id','input_xml_path','is_random_selection','validation_mode','expected_correct_count_for_branch','accepted_cod_cn_set','accepted_cod_abf_set']
+    rand_candidate_fields=['case_id','expanded_route_id','input_xml_path','candidate_cod_cn_actual','candidate_cod_abf_actual','candidate_valid_flag','candidate_selected_flag_after_blaze']
+    rand_response_fields=['case_id','expanded_route_id','input_xml_path','actual_cod_cn_actual','actual_cod_abf_actual']
+    rand_score_fields=['expanded_route_id','random_cases_expected','expected_correct_count','validation_rule']
+    sample_fields=['case_id','input_xml_path','sha256','activo_financiero_hash','domain_validation_pass','r2_case','r2_pass','tipo_cliente_pass','patrono_validation_pass']
+
+    counts=Counter(); route_counts=Counter(); output_counts=Counter(); final_rule_counts=Counter()
+    cn_count_values=Counter(); abf_min_values=Counter(); abf_max_values=Counter()
+    route_r2_failures=Counter(); route_tipo_failures=Counter(); route_patrono_failures=Counter(); route_random_counts=Counter()
+    domain_value_counters={field:Counter() for field in DOMAIN_RULES}; domain_failure_samples=[]
+    sample_rows=[]; first_xml_full=None
+    bt_total=bt_pass=0; domain_fail_total=0; r2_total=r2_pass_count=0; tipo_total=tipo_pass_count=0; patrono_total=patrono_pass_count=0; random_cases=0; random_candidate_rows=0; labor_diff_count=0
+    age_by_route=defaultdict(set); vivienda_by_route=defaultdict(set); patrono_by_route=defaultdict(set)
+
+    expected_csv=BASE/'03_expected'/'expected_outputs.csv'
+    validation_csv=BASE/'04_validation'/'generation_validation.csv'
+    r2_detail_csv=BASE/'04_validation'/'r2_validation_detail.csv'
+    tipo_csv=BASE/'04_validation'/'tipo_cliente_validation.csv'
+    patrono_csv=BASE/'04_validation'/'patrono_validation.csv'
+    bt_csv=BASE/'04_validation'/'bt_validation_detail.csv'
+    random_case_id_csv=BASE/'04_validation'/'random_case_id.csv'
+    random_candidates_csv=BASE/'04_validation'/'random_candidates.csv'
+    random_response_template_csv=BASE/'04_validation'/'random_response_template.csv'
+    random_branch_score_csv=BASE/'04_validation'/'random_branch_score.csv'
+
+    with expected_csv.open('w',newline='',encoding='utf-8') as ef, validation_csv.open('w',newline='',encoding='utf-8') as vf, r2_detail_csv.open('w',newline='',encoding='utf-8') as r2f, tipo_csv.open('w',newline='',encoding='utf-8') as tf, patrono_csv.open('w',newline='',encoding='utf-8') as pf, bt_csv.open('w',newline='',encoding='utf-8') as bf, random_case_id_csv.open('w',newline='',encoding='utf-8') as rcf, random_candidates_csv.open('w',newline='',encoding='utf-8') as rcandf, random_response_template_csv.open('w',newline='',encoding='utf-8') as rrtf:
+        ew=csv.DictWriter(ef, fieldnames=expected_fields); ew.writeheader()
+        vw=csv.DictWriter(vf, fieldnames=validation_fields); vw.writeheader()
+        r2w=csv.DictWriter(r2f, fieldnames=r2_fields); r2w.writeheader()
+        tw=csv.DictWriter(tf, fieldnames=tipo_fields); tw.writeheader()
+        pw=csv.DictWriter(pf, fieldnames=patrono_fields); pw.writeheader()
+        bw=csv.DictWriter(bf, fieldnames=bt_fields); bw.writeheader()
+        rcw=csv.DictWriter(rcf, fieldnames=rand_case_fields); rcw.writeheader()
+        rcandw=csv.DictWriter(rcandf, fieldnames=rand_candidate_fields); rcandw.writeheader()
+        rrw=csv.DictWriter(rrtf, fieldnames=rand_response_fields); rrw.writeheader()
+
+        for idx, man in enumerate(manifest_rows, start=1):
+            route=catalog[man['expanded_route_id']]
+            ctx=qa.build_context(man, route)
+            assign_case_overrides(ctx, route)
+            _pg, _rid, target_cn = target_group(ctx, route, group_variant_to_cns)
+            creditos=build_creditos(ctx, route, target_cn, by_code)
+            xml=build_xml(ctx, route, creditos, target_cn, by_code, static_activo_financiero)
+            xml_bytes=xml.encode('utf-8')
+            rel_xml=man['input_xml_path']
+            out_path=BASE / rel_xml
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_bytes(xml_bytes)
+
+            expected=build_expected(ctx, route, target_cn, by_code)
+            ew.writerow({k:expected.get(k,'') for k in expected_fields})
+            if expected.get('is_random_selection') == 'Si':
+                random_cases += 1
+                route_random_counts[ctx['expanded_route_id']] += 1
+                rcw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'is_random_selection':'Si','validation_mode':'ACCEPTED_SET','expected_correct_count_for_branch':'100','accepted_cod_cn_set':expected.get('accepted_cod_cn_set',''),'accepted_cod_abf_set':expected.get('accepted_cod_abf_set','')})
+                rrw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'actual_cod_cn_actual':'','actual_cod_abf_actual':''})
+                for abf in [x for x in expected.get('accepted_cod_abf_set','').split('|') if x]:
+                    random_candidate_rows += 1
+                    rcandw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'candidate_cod_cn_actual':expected.get('accepted_cod_cn_set',''),'candidate_cod_abf_actual':abf,'candidate_valid_flag':'Si','candidate_selected_flag_after_blaze':''})
+
+            domain_ok=True
+            if idx <= 50 or idx % 1000 == 0:
+                dom_values, dom_failures=validate_domains_from_xml(xml_bytes)
+                for field,counter in dom_values.items(): domain_value_counters[field].update(counter)
+                if dom_failures:
+                    domain_ok=False; domain_fail_total += 1
+                    if len(domain_failure_samples)<20: domain_failure_samples.append({'case_id':ctx['case_id'],'failures':dom_failures[:10]})
+            cn_count=len(cns); abf_counts=[len(cn['abfs']) for cn in cns]
+            min_abfs=min(abf_counts); max_abfs=max(abf_counts)
+            cn_count_values[cn_count]+=1; abf_min_values[min_abfs]+=1; abf_max_values[max_abfs]+=1
+            r2v=r2_validation(ctx, route, creditos, target_cn, by_code)
+            if r2v['is_r2']=='Si':
+                r2_total += 1
+                if r2v['r2_pass']=='Si': r2_pass_count += 1
+                else: route_r2_failures[ctx['expanded_route_id']]+=1
+                r2w.writerow({k:r2v.get(k,'') for k in r2_fields if k not in {'case_id','expanded_route_id','input_xml_path'}} | {'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml})
+            tv=tipo_cliente_validation(ctx, creditos); tipo_total += 1
+            if tv['tipo_cliente_pass']=='Si': tipo_pass_count += 1
+            else: route_tipo_failures[ctx['expanded_route_id']]+=1
+            tw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml, **tv})
+            pv=patrono_validation(ctx, route, cns, target_cn, by_code); patrono_total += 1
+            if pv['patrono_validation_pass']=='Si': patrono_pass_count += 1
+            else: route_patrono_failures[ctx['expanded_route_id']]+=1
+            pw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml, **pv})
+
+            is_bt=ctx['final_output_class_id']=='CONTROL_BT'
+            bt_credito_banca_ok='N/A'; bt_expected_tree_ok='N/A'
+            if is_bt:
+                bt_total += 1
+                root=ET.fromstring(xml_bytes)
+                credito_bancas={e.text for e in root.findall('.//creditoBanca')}
+                abf_sug_banca=(root.find('.//abfSugeridoBanca').text or '') if root.find('.//abfSugeridoBanca') is not None else ''
+                bt_credito_banca_ok='Si' if credito_bancas=={BANCA_TRABAJADORES} else 'No'
+                bt_expected_tree_ok='Si' if expected.get('expected_control_tree')=='BT' else 'No'
+                pass_bt = bt_credito_banca_ok=='Si' and bt_expected_tree_ok=='Si'
+                if pass_bt: bt_pass += 1
+                bw.writerow({'case_id':ctx['case_id'],'input_xml_path':rel_xml,'credito_banca_values':'|'.join(sorted(credito_bancas)),'abf_sugerido_banca':abf_sug_banca,'expected_control_tree':expected.get('expected_control_tree',''),'pass_bt_validation':'Si' if pass_bt else 'No'})
+
+            labor_cn=creditos[0]['participanteLaborCn'] if creditos else ''
+            cosecha_cn=creditos[0]['cnCosechaCod'] if creditos else ''
+            if labor_cn and labor_cn != cosecha_cn: labor_diff_count += 1
+            vivienda, _trabajo = client_locations(ctx, route, target_cn, by_code)
+            age_by_route[ctx['expanded_route_id']].add(ctx['cliente_edad'])
+            vivienda_by_route[ctx['expanded_route_id']].add(vivienda)
+            patrono_by_route[ctx['expanded_route_id']].add(ctx['cliente_patrono_nombre'])
+            vw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'general_route_id':ctx['general_route_id'],'final_output_class_id':ctx['final_output_class_id'],'input_xml_path':rel_xml,'xml_generated':'Si','expected_generated':'Si','all_static_cn_catalog_present':'Si','cn_count':cn_count,'min_abfs_per_cn':min_abfs,'max_abfs_per_cn':max_abfs,'activo_financiero_hash':static_hash,'activo_financiero_hash_matches_static':'Si','domain_validation_pass':'Si' if domain_ok else 'No','r2_case':r2v['is_r2'],'r2_validation_pass':r2v['r2_pass'],'tipo_cliente_pass':tv['tipo_cliente_pass'],'patrono_validation_pass':pv['patrono_validation_pass'],'bt_control_case':'Si' if is_bt else 'No','bt_credito_banca_ok':bt_credito_banca_ok,'bt_expected_tree_ok':bt_expected_tree_ok,'labor_cn':labor_cn,'cosecha_cn':cosecha_cn,'labor_cosecha_can_differ':'Si' if labor_cn != cosecha_cn else 'No','cliente_edad':ctx['cliente_edad'],'cliente_patrono':ctx['cliente_patrono_nombre'],'tipo_cliente_expected':ctx['tipo_cliente'],'target_cn':target_cn or '','notes':r2v.get('notes','')})
+            if len(sample_rows)<1000 or idx % 10000==0:
+                sample_rows.append({'case_id':ctx['case_id'],'input_xml_path':rel_xml,'sha256':hashlib.sha256(xml_bytes).hexdigest(),'activo_financiero_hash':static_hash,'domain_validation_pass':'Si' if domain_ok else 'No','r2_case':r2v['is_r2'],'r2_pass':r2v['r2_pass'],'tipo_cliente_pass':tv['tipo_cliente_pass'],'patrono_validation_pass':pv['patrono_validation_pass']})
+            if first_xml_full is None:
+                first_xml_full=xml
+            counts['total_cases']+=1; route_counts[ctx['expanded_route_id']]+=1; output_counts[ctx['final_output_class_id']]+=1; final_rule_counts[ctx['final_rule']]+=1
+            if idx % 5000 == 0: print(f'Generated {idx:,} XMLs', flush=True)
+
+    with (BASE/'04_validation'/'route_generation_summary.csv').open('w',newline='',encoding='utf-8') as rf:
+        rw=csv.DictWriter(rf, fieldnames=['expanded_route_id','generated_cases','distinct_cliente_edad','distinct_clienteMunicipioVivienda','distinct_cliente_patrono','random_cases']); rw.writeheader()
+        for k,v in sorted(route_counts.items()):
+            rw.writerow({'expanded_route_id':k,'generated_cases':v,'distinct_cliente_edad':len(age_by_route[k]),'distinct_clienteMunicipioVivienda':len(vivienda_by_route[k]),'distinct_cliente_patrono':len(patrono_by_route[k]),'random_cases':route_random_counts.get(k,0)})
+    with (BASE/'04_validation'/'sample_sha256_validation.csv').open('w',newline='',encoding='utf-8') as sf:
+        sw=csv.DictWriter(sf, fieldnames=sample_fields); sw.writeheader(); sw.writerows(sample_rows)
+    with random_branch_score_csv.open('w',newline='',encoding='utf-8') as rb:
+        rbw=csv.DictWriter(rb, fieldnames=rand_score_fields); rbw.writeheader()
+        for k,v in sorted(route_random_counts.items()):
+            rbw.writerow({'expanded_route_id':k,'random_cases_expected':v,'expected_correct_count':'100','validation_rule':'PASS si Blaze devuelve un codCnActual/codAbfActual dentro del conjunto aceptado en los 100 casos de la rama.'})
+    if first_xml_full:
+        (BASE/'04_validation'/'sample_input_qa100_v6.xml').write_text(first_xml_full, encoding='utf-8')
+        (BASE/'04_validation'/'first_xml_preview.txt').write_text(first_xml_full[:12000], encoding='utf-8')
+
+    domain_summary={'domain_validation_failed_sampled_cases':domain_fail_total,'sampled_case_count_for_domain_validation':50 + max(0, (len(manifest_rows)-50)//1000),'domain_failure_samples':domain_failure_samples,'domain_values_observed':{f:dict(c) for f,c in domain_value_counters.items()},'domain_rules':{f:sorted(list(v)) for f,v in DOMAIN_RULES.items()},'note':'Validacion muestral; campos abfSugerido* pueden ir en blanco cuando no existe ABF sugerido.'}
+    r2_summary={'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'r2_validation_failed_cases':r2_total-r2_pass_count,'r2_validation_pass_rate':None if r2_total==0 else round(r2_pass_count/r2_total,6),'route_r2_failures':dict(route_r2_failures)}
+    tipo_summary={'tipo_cliente_cases_generated':tipo_total,'tipo_cliente_cases_passed_validation':tipo_pass_count,'tipo_cliente_validation_failed_cases':tipo_total-tipo_pass_count,'tipo_cliente_validation_pass_rate':None if tipo_total==0 else round(tipo_pass_count/tipo_total,6),'route_tipo_failures':dict(route_tipo_failures)}
+    patrono_summary={'patrono_cases_generated':patrono_total,'patrono_cases_passed_validation':patrono_pass_count,'patrono_validation_failed_cases':patrono_total-patrono_pass_count,'patrono_validation_pass_rate':None if patrono_total==0 else round(patrono_pass_count/patrono_total,6),'route_patrono_failures':dict(route_patrono_failures)}
+    random_summary={'random_cases_generated':random_cases,'random_candidate_rows_generated':random_candidate_rows,'random_routes':len(route_random_counts),'expected_correct_count_per_random_route':100}
+    bt_summary={'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'bt_validation_pass_rate':None if bt_total==0 else round(bt_pass/bt_total,6)}
+    generated_at = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.']}
+    for path, data in [
+        (BASE/'04_validation'/'generation_summary.json', summary),
+        (BASE/'04_validation'/'domain_validation_summary.json', domain_summary),
+        (BASE/'04_validation'/'r2_validation_summary.json', r2_summary),
+        (BASE/'04_validation'/'tipo_cliente_validation_summary.json', tipo_summary),
+        (BASE/'04_validation'/'patrono_validation_summary.json', patrono_summary),
+        (BASE/'04_validation'/'random_selection_validation_summary.json', random_summary),
+        (BASE/'04_validation'/'bt_validation_summary.json', bt_summary),
+    ]:
+        path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+    print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
+
 if __name__ == '__main__':
     limit_env=os.getenv('QA_GENERATOR_LIMIT')
-    main(int(limit_env) if limit_env else None)
+    if os.getenv('QA_GENERATOR_ARCHIVE') == '1':
+        main(int(limit_env) if limit_env else None)
+    else:
+        main_in_place(int(limit_env) if limit_env else None)

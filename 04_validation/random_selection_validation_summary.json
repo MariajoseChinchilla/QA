@@ -2,12 +2,5 @@
   "random_cases_generated": 9800,
   "random_candidate_rows_generated": 22300,
   "random_routes": 98,
-  "expected_correct_count_per_random_route": 100,
-  "validation_files": {
-    "case_identifier": "04_validation/random_case_id.csv",
-    "candidate_options": "04_validation/random_candidates.csv",
-    "response_template": "04_validation/random_response_template.csv",
-    "branch_scorecard": "04_validation/random_branch_score.csv",
-    "validator_script": "05_scripts/validate_random.py"
-  }
+  "expected_correct_count_per_random_route": 100
 }
