@@ -55,6 +55,49 @@
 ### Estado
 - CORREGIDO
 
+## [2026-05-15 12:12] Arreglo: Alineacion de General post primera asignacion contra arbol completo
+
+### Error detectado
+- Al revisar el arbol completo compartido, varios XMLs no forzaban correctamente algunas decisiones de `General_post_primera_asignacion`.
+- En D06, las rutas partian de un cliente con ABF asignado en baja, pero los XMLs podian dejar `clienteEsCarteraDelAbfCod=-1`.
+- En D25, la cosecha debia venir del asesor asignado, pero `participanteLabor*` podia apuntar a otro ABF de labor.
+- En D16/D34, la baja temporal del ABF original no se reflejaba con un ABF asignado en vacaciones.
+- En D18/D27, el CN de cosecha no siempre respetaba la region exigida por la rama.
+
+### Causa probable
+- El generador usaba defaults fijos para asignacion previa, CN de cosecha y participante labor.
+- Las rutas R1 candidatas estaban agrupadas sin separar siempre por la region que necesitaba la rama General.
+
+### Cambio aplicado
+- Se agrego resolucion contextual de asignacion actual/anterior del cliente:
+  - ABF activo normal.
+  - ABF asignado en baja para D06.
+  - ABF asignado con vacaciones para D16/D34.
+  - cartera agencia cuando aplica.
+- D25 ahora coloca `participanteLabor*` igual al asesor asignado del cliente.
+- El CN de cosecha se resuelve por region/ruta y por target cuando la rama delega a R1 con el CN de la ruta.
+- Los grupos candidatos R1 se separan por region para que las ramas que exigen misma region no reutilicen CNs de otra region.
+- Se actualizaron los outputs esperados para que `codCnAnterior`, `codAbfAnterior`, `codCnActual` y `codAbfActual` coincidan con la nueva asignacion contextual.
+- Se regeneraron XMLs, catalogos y reportes.
+
+### Archivos modificados
+- `05_scripts/generate_inputs_100_v6.py`
+- `00_catalogos/cn_catalog.csv`
+- `02_inputs_xml/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/generation_summary.json`
+- `04_validation/outputs/qa_validation_summary.json`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\generate_full_qa_xml_inputs.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`
+- Validacion focal: D06, D25, D16/D34, D18/D27 y ABF labor, 14,100 XMLs revisados, 0 errores.
+- Validacion focal de `abfSugerido*`: 836 XMLs revisados, 0 errores.
+- `python .\05_scripts\run_all_validations.py --verbose` finalizo `PARTIAL` solo por modos no canonicos ya documentados; 0 errores criticos.
+
+### Estado
+- CORREGIDO
+
 ## [2026-05-14 14:48] Arreglo: Optimizacion de corrida completa
 
 ### Error detectado
@@ -138,6 +181,45 @@
 - `python .\05_scripts\generate_inputs_100_v6.py`
 - Verificacion especifica de `abfSugerido*`: 22,200 revisados, 21,900 sin sugerido, 300 con sugerido, 0 errores.
 - `python .\05_scripts\run_all_validations.py --verbose` finalizo `PARTIAL` solo por los mismos modos no canonicos de expected output ya documentados.
+
+### Estado
+- CORREGIDO
+
+## [2026-05-15 10:30] Arreglo: ABF labor alineado a condiciones de region
+
+### Error detectado
+- En `GPA-012__DIRECT`, y potencialmente en otras rutas con condiciones sobre labor, `participanteLabor*` podia quedar con ABF de una region distinta a la del cliente.
+- Ejemplo observado: cliente de `Nor_oriente` con ABF labor de `Metropolitana`, aunque la regla exige que la persona que desembolsa el credito sea de la misma region.
+
+### Causa probable
+- `build_context()` definia la region de labor segun la ruta, pero el generador `qa100_v6` poblaba los campos de labor con un CN/ABF fijo de `Metropolitana`.
+- Los expected para asignacion por ultimo desembolso/labor tambien usaban ese CN/ABF fijo.
+
+### Cambio aplicado
+- Se agregaron CNs de labor por region y sus ABFs asociados:
+  - `1020` / `60000x` para `Metropolitana`.
+  - `1021` / `61000x` para `Nor_oriente`.
+  - `1022` / `62000x` para `Sur_occidente`.
+- `participanteLabor*` ahora se resuelve desde `ctx['labor_region']`, `ctx['labor_estado']` y `ctx['labor_banca']`.
+- Los expected de rutas que asignan por ABF labor usan el mismo CN/ABF labor resuelto.
+- El generador completo historico tambien define CNs de labor por region y guarda `labor_cn_code` / municipio de labor para mantener consistencia.
+- Se agrego reintento corto al escribir XMLs para evitar fallos transitorios de Windows mientras otros procesos observan la carpeta.
+
+### Archivos modificados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/generate_full_qa_xml_inputs.py`
+- `00_catalogos/cn_catalog.csv`
+- `02_inputs_xml/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/generation_summary.json`
+- `04_validation/outputs/qa_validation_summary.json`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\generate_full_qa_xml_inputs.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`
+- Verificacion focal de rutas con decisiones `D11/D12/D13/D14/D31/D32/D36/D37`: 1,600 XMLs revisados, 0 errores.
+- Muestra de `GPA-012__DIRECT`: cliente `Nor_oriente`, `participanteLaborCn=1021`, `participanteLaborCod=610001`, `participanteLaborRegion=Nor_oriente`; `cnCosechaRegion=Metropolitana` permitido por regla.
+- `python .\05_scripts\run_all_validations.py --verbose` finalizo `PARTIAL` solo por los modos no canonicos de expected output ya documentados; 0 errores criticos.
 
 ### Estado
 - CORREGIDO

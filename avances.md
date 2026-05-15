@@ -129,3 +129,74 @@
 
 ### Proximo paso sugerido
 - Mantener pendiente la decision de negocio sobre los modos no canonicos de `expected_outputs.csv`.
+
+## [2026-05-15 10:30] Avance: Correccion de ABF labor por region
+
+### Que se reviso
+- Observacion puntual en `GPA-012__DIRECT`: el cliente era de `Nor_oriente`, pero `participanteLabor*` quedaba con fuerza comercial de `Metropolitana`.
+- Rutas donde las decisiones del arbol exigen condiciones sobre ABF labor: banca, estado y/o misma region que el cliente.
+- Scripts generadores y XMLs bajo `02_inputs_xml/`.
+
+### Hallazgos
+- El contexto calculaba correctamente la region esperada de labor, pero `generate_inputs_100_v6.py` siempre usaba el CN/ABF labor fijo `1020` / `60000x`, de region `Metropolitana`.
+- El CN de cosecha puede variar por regla, pero `participanteLabor*` debe cumplir las condiciones de labor cuando la regla lo exige.
+- Se agregaron CN/ABF labor por region para `Metropolitana`, `Nor_oriente` y `Sur_occidente`.
+
+### Resultado
+- PASS focal en 16 rutas y 1,600 XMLs revisados: 0 errores de banca, estado o region en `participanteLabor*`.
+- En `GPA-012__DIRECT`, `participanteLaborRegion` ahora queda `Nor_oriente` con CN labor `1021` y ABF labor `610001`; `cnCosechaRegion` puede permanecer `Metropolitana`.
+- Se regeneraron los 22,200 XMLs.
+
+### Archivos involucrados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/generate_full_qa_xml_inputs.py`
+- `00_catalogos/cn_catalog.csv`
+- `02_inputs_xml/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/generation_summary.json`
+- `04_validation/outputs/qa_validation_summary.json`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\generate_full_qa_xml_inputs.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`
+- Verificacion focal de rutas con condiciones de ABF labor: 1,600 XMLs, 0 errores.
+- `python .\05_scripts\run_all_validations.py --verbose` termino `PARTIAL` por los mismos modos no canonicos de `expected_outputs.csv`; 0 errores criticos.
+
+### Proximo paso sugerido
+- Confirmar la convencion final de los modos `ACCEPTED_SET_OR_DETERMINISTIC_SINGLETON`, `EXACT_OR_BUSINESS_ASSERTION` y `BOLSON`.
+
+## [2026-05-15 12:12] Avance: Revision contra arbol completo General post primera asignacion
+
+### Que se reviso
+- `motor_asignacion.drawio (1).xml`, pagina `General_post_primera_asignacion`.
+- Diccionarios de soporte en `Requerimiento bases de datos Admon Cartera 2.docx`, `Mapeo de Campos de Salida.xlsx` y `Ejemplo tabla estructurada.csv`.
+- Catalogo expandido de rutas, generador `qa100_v6`, XMLs y expected outputs.
+
+### Hallazgos
+- Se detectaron inconsistencias entre el arbol y los XMLs generados en varias senales de General post primera asignacion:
+  - D06: cuando el cliente no esta asignado a un ABF de alta, la ruta requiere un ABF asignado en baja; algunos XMLs lo dejaban sin ABF asignado.
+  - D25: cuando la cosecha la hizo el asesor asignado, `participanteLabor*` no siempre era el mismo ABF/CN asignado al cliente.
+  - D16/D34: la baja temporal del ABF original no estaba representada con un ABF asignado en vacaciones.
+  - D18/D27: el CN de cosecha podia quedar en una region fija en vez de la region exigida por la rama.
+
+### Resultado
+- PASS focal sobre las decisiones corregidas: 14,100 XMLs revisados, 0 errores.
+- Validacion focal de `abfSugerido*`: 836 XMLs relevantes/muestra, 300 con sugerido, 536 sin sugerido, 0 errores.
+- Se regeneraron los 22,200 XMLs y `03_expected/expected_outputs.csv`.
+
+### Archivos involucrados
+- `05_scripts/generate_inputs_100_v6.py`
+- `00_catalogos/cn_catalog.csv`
+- `02_inputs_xml/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/generation_summary.json`
+- `04_validation/outputs/qa_validation_summary.json`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\generate_full_qa_xml_inputs.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`
+- Validacion focal de D06, D25, D16/D34, D18/D27 y ABF labor: 14,100 XMLs, 0 errores.
+- `python .\05_scripts\run_all_validations.py --verbose` termino `PARTIAL` por los mismos modos no canonicos de expected/random; 0 errores criticos.
+
+### Proximo paso sugerido
+- Mantener pendiente solo la decision de negocio sobre normalizar los modos no canonicos de expected/random.
