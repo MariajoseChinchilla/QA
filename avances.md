@@ -104,3 +104,28 @@
 
 ### Proximo paso sugerido
 - Confirmar si se deben normalizar los modos `ACCEPTED_SET_OR_DETERMINISTIC_SINGLETON`, `EXACT_OR_BUSINESS_ASSERTION` y `BOLSON` en `expected_outputs.csv`.
+
+## [2026-05-14 19:56] Avance: Regeneracion por regla de ABF sugerido
+
+### Que se reviso
+- Requerimiento nuevo: todo campo `abfSugerido*` debe espejar la asignacion actual del cliente cuando existe.
+- Scripts generadores de XML en `05_scripts/`.
+- XMLs generados bajo `02_inputs_xml/`.
+
+### Hallazgos
+- El generador anterior poblaba `abfSugerido*` con valores derivados de ruta/cliente aunque el cliente no tuviera ABF asignado.
+- En la nueva corrida, 21,900 XMLs quedaron con `abfSugeridoCod` vacio y todos los campos `abfSugerido*` vacios.
+- En 300 XMLs el sugerido existe y espeja `clienteEsCarteraDelCnCod=1001` / `clienteEsCarteraDelAbfCod=500001`.
+
+### Resultado
+- PASS
+
+### Archivos involucrados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/generate_full_qa_xml_inputs.py`
+- `02_inputs_xml/`
+- `04_validation/generation_summary.json`
+- `04_validation/outputs/qa_validation_summary.json`
+
+### Proximo paso sugerido
+- Mantener pendiente la decision de negocio sobre los modos no canonicos de `expected_outputs.csv`.

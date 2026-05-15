@@ -3,11 +3,5 @@
   "r2_cases_passed_validation": 14400,
   "r2_validation_failed_cases": 0,
   "r2_validation_pass_rate": 1.0,
-  "route_r2_failures": {},
-  "validation_rules": [
-    "R2.D01=SI implica clienteMunicipioVivienda conocido; R2.D01=NO implica SIN_MUNICIPIO.",
-    "R2.D02/R2.D05/R2.D09 validan si existe crédito histórico HD en CN abierto del municipio correspondiente.",
-    "Preguntas de especialista en patrono se validan contra especialistaPatrono1/2/3 del CN candidato.",
-    "Cada CN candidato usa municipioN/departamentoN único y se rota entre 3 réplicas por ruta para variar datos."
-  ]
+  "route_r2_failures": {}
 }

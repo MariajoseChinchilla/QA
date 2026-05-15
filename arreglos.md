@@ -99,3 +99,45 @@
 
 ### Estado
 - CORREGIDO
+
+## [2026-05-14 19:56] Arreglo: ABF sugerido igual a asignacion del cliente
+
+### Error detectado
+- Los campos `abfSugerido*` no estaban necesariamente alineados con el ABF de cartera/asignacion actual del cliente.
+- Cuando no existia ABF sugerido, algunos campos seguian trayendo informacion de sugerido.
+
+### Causa probable
+- El generador usaba valores fijos o derivados de contexto de ruta para `abfSugerido*`, en lugar de leer la asignacion actual del cliente.
+
+### Cambio aplicado
+- `abfSugerido*` ahora se construye desde `clienteEsCarteraDelCnCod` y `clienteEsCarteraDelAbfCod`.
+- Si el ABF de cartera del cliente es nulo (`-1` o vacio), todos los campos `abfSugerido*` se generan vacios.
+- Si existe ABF de cartera, `abfSugeridoCod`, estado, edad, CN, banca, region, municipio y oportunidad espejan ese ABF/CN.
+- El generador `qa100_v6` ahora puede regenerar directamente esta carpeta del repo sin depender de `/mnt/data` ni de `zstd`.
+- Se regeneraron los 22,200 XMLs y reportes de apoyo.
+
+### Archivos modificados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/generate_full_qa_xml_inputs.py`
+- `02_inputs_xml/`
+- `04_validation/bt_validation_detail.csv`
+- `04_validation/bt_validation_summary.json`
+- `04_validation/domain_validation_summary.json`
+- `04_validation/first_xml_preview.txt`
+- `04_validation/generation_summary.json`
+- `04_validation/patrono_validation_summary.json`
+- `04_validation/r2_validation_summary.json`
+- `04_validation/random_selection_validation_summary.json`
+- `04_validation/sample_input_qa100_v6.xml`
+- `04_validation/sample_sha256_validation.csv`
+- `04_validation/tipo_cliente_validation_summary.json`
+- `04_validation/outputs/qa_validation_summary.json`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\generate_full_qa_xml_inputs.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`
+- Verificacion especifica de `abfSugerido*`: 22,200 revisados, 21,900 sin sugerido, 300 con sugerido, 0 errores.
+- `python .\05_scripts\run_all_validations.py --verbose` finalizo `PARTIAL` solo por los mismos modos no canonicos de expected output ya documentados.
+
+### Estado
+- CORREGIDO

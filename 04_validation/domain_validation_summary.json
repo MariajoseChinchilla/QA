@@ -77,17 +77,16 @@
       "Deficit": 4392
     },
     "abfSugeridoEstado": {
-      "Baja": 72
+      "": 72
     },
     "abfSugeridoBanca": {
-      "banca_personas": 72
+      "": 72
     },
     "abfSugeridoRegion": {
-      "Nor_oriente": 59,
-      "Metropolitana": 13
+      "": 72
     },
     "abfSugeridoOportunidad": {
-      "No_Sugerido": 72
+      "": 72
     },
     "esTrabajadorInterno": {
       "N": 72
@@ -216,5 +215,5 @@
       "Sur_occidente"
     ]
   },
-  "note": "Validación muestral contra valores de requerimiento. creditoEstado permite C y D por regla de negocio indicada."
+  "note": "Validacion muestral; campos abfSugerido* pueden ir en blanco cuando no existe ABF sugerido."
 }
