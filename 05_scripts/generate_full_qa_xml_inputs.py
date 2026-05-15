@@ -36,6 +36,9 @@ CN_CODES = {
     'MUNI_TRAB': '1102',
     'MUNI_ULT': '1103',
     'DEPTO_ULT': '1201',
+    'LABOR_METRO': '1020',
+    'LABOR_NOR': '1021',
+    'LABOR_SUR': '1022',
     'CP': '9001',
     'CERRADO': '1301',
 }
@@ -47,8 +50,17 @@ CN_NAMES = {
     'MUNI_TRAB': 'AGENCIA MUNICIPIO TRABAJO',
     'MUNI_ULT': 'AGENCIA MUNICIPIO ULTIMO DESEMBOLSO',
     'DEPTO_ULT': 'AGENCIA DEPARTAMENTO ULTIMO DESEMBOLSO',
+    'LABOR_METRO': 'AGENCIA LABOR METROPOLITANA',
+    'LABOR_NOR': 'AGENCIA LABOR NOR ORIENTE',
+    'LABOR_SUR': 'AGENCIA LABOR SUR OCCIDENTE',
     'CP': 'CENTRO DE PROCESAMIENTO',
     'CERRADO': 'AGENCIA CERRADA CONTROL',
+}
+
+LABOR_CN_BY_REGION = {
+    'METROPOLITANA': 'LABOR_METRO',
+    'NOR_ORIENTE': 'LABOR_NOR',
+    'SUR_OCCIDENTE': 'LABOR_SUR',
 }
 
 PATRONO_CODE = '1000786'
@@ -359,6 +371,18 @@ def cn_profile(ctx: dict, key: str) -> dict:
         municipio = 'JOCOTAN' if ctx['depto'] == 'CHIQUIMULA' else 'VILLA_NUEVA'
         region = ctx['client_region']
         depto = ctx['depto']
+    elif key == 'LABOR_METRO':
+        municipio = 'GUATEMALA'
+        region = 'METROPOLITANA'
+        depto = 'GUATEMALA'
+    elif key == 'LABOR_NOR':
+        municipio = 'CHIQUIMULA'
+        region = 'NOR_ORIENTE'
+        depto = 'CHIQUIMULA'
+    elif key == 'LABOR_SUR':
+        municipio = 'QUETZALTENANGO'
+        region = 'SUR_OCCIDENTE'
+        depto = 'QUETZALTENANGO'
     elif key == 'CP':
         municipio = 'GUATEMALA'
         region = 'METROPOLITANA'
@@ -411,7 +435,7 @@ def make_abf(code: str, estado: str, banca: str, edad: int, bolson: str, patrono
 
 
 def build_cns_and_abfs(ctx: dict) -> list[dict]:
-    profiles = [cn_profile(ctx, key) for key in ['ASIGNADO', 'COSECHA', 'MUNI_VIV', 'MUNI_TRAB', 'MUNI_ULT', 'DEPTO_ULT', 'CP', 'CERRADO']]
+    profiles = [cn_profile(ctx, key) for key in ['ASIGNADO', 'COSECHA', 'MUNI_VIV', 'MUNI_TRAB', 'MUNI_ULT', 'DEPTO_ULT', 'LABOR_METRO', 'LABOR_NOR', 'LABOR_SUR', 'CP', 'CERRADO']]
     by_key = {p['key']: p for p in profiles}
 
     # Default: un ABF decoy por CN para representar catálogo completo.
@@ -440,7 +464,9 @@ def build_cns_and_abfs(ctx: dict) -> list[dict]:
 
     # ABF labor / cosechador si el participante labor es ABF.
     if ctx['labor_type'] == 'ABF':
-        labor_cn_key = 'COSECHA' if ctx['labor_region'] == by_key['COSECHA']['region'] else 'ASIGNADO'
+        labor_cn_key = LABOR_CN_BY_REGION.get(ctx['labor_region'], 'LABOR_METRO')
+        ctx['labor_cn_code'] = by_key[labor_cn_key]['cod']
+        ctx['labor_municipio'] = by_key[labor_cn_key]['municipio']
         by_key[labor_cn_key]['abfs'].insert(0, make_abf(
             code=ctx['labor_abf'],
             estado=ctx['labor_estado'],
@@ -506,8 +532,8 @@ def build_creditos(ctx: dict, cns: list[dict]) -> list[dict]:
     old_date = '2025-01-15'
     fecha_concesion = recent_date if ctx['harvest_last_month'] else old_date
     labor_code = ctx['labor_abf'] if ctx['labor_type'] == 'ABF' else (CN_CODES['CP'] if ctx['labor_type'] == 'CP' else CN_CODES['COSECHA'])
-    labor_cn = CN_CODES['COSECHA'] if ctx['labor_type'] != 'CP' else CN_CODES['CP']
-    labor_muni = by_key['COSECHA']['municipio'] if ctx['labor_type'] != 'CP' else by_key['CP']['municipio']
+    labor_cn = ctx.get('labor_cn_code', CN_CODES['COSECHA']) if ctx['labor_type'] == 'ABF' else (CN_CODES['COSECHA'] if ctx['labor_type'] != 'CP' else CN_CODES['CP'])
+    labor_muni = ctx.get('labor_municipio', by_key['COSECHA']['municipio']) if ctx['labor_type'] == 'ABF' else (by_key['COSECHA']['municipio'] if ctx['labor_type'] != 'CP' else by_key['CP']['municipio'])
     labor_region = ctx['labor_region'] if ctx['labor_type'] == 'ABF' else by_key['COSECHA']['region']
     if ctx['labor_type'] == 'CP':
         labor_region = 'METROPOLITANA'
@@ -624,7 +650,7 @@ def build_expected(ctx: dict) -> dict:
         expected['codAbfActual'] = ctx['current_abf'] if ctx['assigned_yes'] else '-1'
         expected['expected_description'] = 'Mantener asignación actual.'
     elif fc in {'ASSIGN_NEW_ABF', 'ASSIGN_NEW_ABF_CANCEL_NEW_CN', 'ASSIGN_LAST_DISB_ABF', 'ASSIGN_LAST_DISB_ABF_CANCEL_LAST_CN', 'ASSIGN_HARVEST_ABF'}:
-        expected['codCnActual'] = CN_CODES['COSECHA']
+        expected['codCnActual'] = ctx.get('labor_cn_code', CN_CODES['COSECHA'])
         expected['codAbfActual'] = ctx['labor_abf']
         expected['expected_description'] = 'Asignar al ABF que desembolsó/cosechó según la ruta.'
     elif fc in {'ASSIGN_AGENCY_NEW_CN', 'ASSIGN_AGENCY_NEW_CN_CANCEL_NEW_CN'}:

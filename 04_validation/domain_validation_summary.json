@@ -26,8 +26,8 @@
       "banca_trabajadores": 1
     },
     "participanteLaborRegion": {
-      "Metropolitana": 127,
-      "Nor_oriente": 9
+      "Nor_oriente": 66,
+      "Metropolitana": 70
     },
     "participanteLaborVacacion": {
       "0": 136
@@ -52,28 +52,28 @@
       "Si": 12
     },
     "cnEstado": {
-      "Alta": 3744,
+      "Alta": 3888,
       "Baja": 72
     },
     "cnRegion": {
-      "Nor_oriente": 1872,
+      "Nor_oriente": 1944,
       "Metropolitana": 1080,
-      "Sur_occidente": 864
+      "Sur_occidente": 936
     },
     "asignadoEstado": {
-      "Alta": 11232,
-      "Baja": 4032
+      "Alta": 11448,
+      "Baja": 4392
     },
     "asignadoEnVacacion": {
-      "0": 15264
+      "0": 15840
     },
     "asignadoBanca": {
-      "banca_personas": 14904,
-      "banca_trabajadores": 360
+      "banca_personas": 15120,
+      "banca_trabajadores": 720
     },
     "asignadoBolsonEstado": {
-      "Equilibrio": 7992,
-      "Exceso": 2880,
+      "Equilibrio": 8640,
+      "Exceso": 2808,
       "Deficit": 4392
     },
     "abfSugeridoEstado": {

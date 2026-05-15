@@ -7,6 +7,16 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 import xml.etree.ElementTree as ET
 
+def write_bytes_retry(path: Path, data: bytes, attempts: int = 5) -> None:
+    for attempt in range(attempts):
+        try:
+            path.write_bytes(data)
+            return
+        except OSError as exc:
+            if attempt == attempts - 1 or exc.errno not in {13, 22, 32}:
+                raise
+            time.sleep(0.2 * (attempt + 1))
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 BASE = SCRIPT_DIR.parent
 BASE_GEN = SCRIPT_DIR / 'generate_full_qa_xml_inputs.py'
@@ -20,7 +30,7 @@ FIELD_CONTRACT = BASE / '00_catalogos' / 'field_contract_arbol_expandido_general
 SCENARIOS = BASE / '00_catalogos' / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 ARCHIVE = BASE / 'qa100_v6.tar.zst'
 ROOT_NAME = 'qa100'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V10_100_PER_ROUTE_SUGERIDO_EQUALS_CLIENT_ASSIGNMENT_2026_05_14'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V11_SUGERIDO_EQUALS_CLIENT_ASSIGNMENT_LABOR_REGION_2026_05_15'
 RUN_DATE = '2026-05-14'
 
 # Patronos finitos. Los campos especialistaPatrono1/2/3 contienen NOMBRES de patrono.
@@ -91,13 +101,49 @@ LABOR_CN = '1020'
 LABOR_ABF_ALTA = '600001'
 LABOR_ABF_BAJA = '600002'
 LABOR_ABF_BT = '600003'
+LABOR_ABF_BT_BAJA = '600005'
 CP_CN = '9001'
 CERRADO_CN = '1301'
+
+LABOR_BY_REGION = {
+    'Metropolitana': {
+        'cn': LABOR_CN,
+        'alta_bp': LABOR_ABF_ALTA,
+        'baja_bp': LABOR_ABF_BAJA,
+        'alta_bt': LABOR_ABF_BT,
+        'baja_bt': LABOR_ABF_BT_BAJA,
+        'nombre': 'Agencia Labor Del Vendedor',
+        'departamento': 'departamento_labor',
+        'municipio': 'municipio_labor',
+    },
+    'Nor_oriente': {
+        'cn': '1021',
+        'alta_bp': '610001',
+        'baja_bp': '610002',
+        'alta_bt': '610003',
+        'baja_bt': '610005',
+        'nombre': 'Agencia Labor Nor Oriente',
+        'departamento': 'departamento_labor_nor',
+        'municipio': 'municipio_labor_nor',
+    },
+    'Sur_occidente': {
+        'cn': '1022',
+        'alta_bp': '620001',
+        'baja_bp': '620002',
+        'alta_bt': '620003',
+        'baja_bt': '620005',
+        'nombre': 'Agencia Labor Sur Occidente',
+        'departamento': 'departamento_labor_sur',
+        'municipio': 'municipio_labor_sur',
+    },
+}
 
 BASE_CNS = [
     {'key':'ASIGNACION_ACTUAL','cod':CURRENT_ASSIGNMENT_CN,'nombre':'Agencia Asignacion Actual','estado':'Alta','region':'Nor_oriente','departamento':'departamento_asig','municipio':'municipio_asig'},
     {'key':'COSECHA_DIRECTA','cod':DIRECT_COSECHA_CN,'nombre':'Agencia Cosecha Directa','estado':'Alta','region':'Metropolitana','departamento':'departamento_current','municipio':'municipio_current'},
-    {'key':'LABOR_VENDEDOR','cod':LABOR_CN,'nombre':'Agencia Labor Del Vendedor','estado':'Alta','region':'Metropolitana','departamento':'departamento_labor','municipio':'municipio_labor'},
+    {'key':'LABOR_VENDEDOR','cod':LABOR_BY_REGION['Metropolitana']['cn'],'nombre':LABOR_BY_REGION['Metropolitana']['nombre'],'estado':'Alta','region':'Metropolitana','departamento':LABOR_BY_REGION['Metropolitana']['departamento'],'municipio':LABOR_BY_REGION['Metropolitana']['municipio']},
+    {'key':'LABOR_VENDEDOR_NOR','cod':LABOR_BY_REGION['Nor_oriente']['cn'],'nombre':LABOR_BY_REGION['Nor_oriente']['nombre'],'estado':'Alta','region':'Nor_oriente','departamento':LABOR_BY_REGION['Nor_oriente']['departamento'],'municipio':LABOR_BY_REGION['Nor_oriente']['municipio']},
+    {'key':'LABOR_VENDEDOR_SUR','cod':LABOR_BY_REGION['Sur_occidente']['cn'],'nombre':LABOR_BY_REGION['Sur_occidente']['nombre'],'estado':'Alta','region':'Sur_occidente','departamento':LABOR_BY_REGION['Sur_occidente']['departamento'],'municipio':LABOR_BY_REGION['Sur_occidente']['municipio']},
     {'key':'CENTRO_PROCESAMIENTO','cod':CP_CN,'nombre':'Centro De Procesamiento','estado':'Alta','region':'Metropolitana','departamento':'departamento_cp','municipio':'municipio_cp'},
     {'key':'CERRADO_CONTROL','cod':CERRADO_CN,'nombre':'Agencia Cerrada Control','estado':'Baja','region':'Nor_oriente','departamento':'departamento_closed','municipio':'municipio_closed'},
 ]
@@ -265,12 +311,13 @@ def base_abfs_for_cn(key: str, cod: str) -> list[dict]:
             make_abf('510003','Alta',BANCA_TRABAJADORES,44,'Equilibrio',False),
             make_abf('510004','Baja',BANCA_PERSONAS,35,'Deficit',True),
         ]
-    if key == 'LABOR_VENDEDOR':
+    if key.startswith('LABOR_VENDEDOR'):
+        region = next((cfg for cfg in LABOR_BY_REGION.values() if cfg['cn'] == cod), LABOR_BY_REGION['Metropolitana'])
         return [
-            make_abf(LABOR_ABF_ALTA,'Alta',BANCA_PERSONAS,33,'Equilibrio',True,cosecha=DIRECT_COSECHA_CN),
-            make_abf(LABOR_ABF_BAJA,'Baja',BANCA_PERSONAS,33,'Equilibrio',True,cosecha=DIRECT_COSECHA_CN),
-            make_abf(LABOR_ABF_BT,'Alta',BANCA_TRABAJADORES,34,'Equilibrio',False,cosecha=DIRECT_COSECHA_CN),
-            make_abf('600004','Alta',BANCA_PERSONAS,51,'Exceso',False),
+            make_abf(region['alta_bp'],'Alta',BANCA_PERSONAS,33,'Equilibrio',True,cosecha=DIRECT_COSECHA_CN),
+            make_abf(region['baja_bp'],'Baja',BANCA_PERSONAS,33,'Equilibrio',True,cosecha=DIRECT_COSECHA_CN),
+            make_abf(region['alta_bt'],'Alta',BANCA_TRABAJADORES,34,'Equilibrio',False,cosecha=DIRECT_COSECHA_CN),
+            make_abf(region['baja_bt'],'Baja',BANCA_TRABAJADORES,34,'Equilibrio',False,cosecha=DIRECT_COSECHA_CN),
         ]
     if key == 'CENTRO_PROCESAMIENTO':
         return [
@@ -381,6 +428,18 @@ def suggested_abf_fields(current_cn: str, current_abf: str, by_code: dict[str,di
         'abfSugeridoOportunidad': 'Sugerido',
     }
 
+def labor_abf_for_context(ctx: dict, by_code: dict[str,dict]) -> tuple[dict, dict]:
+    region_name = norm_region(ctx.get('labor_region', 'Metropolitana'))
+    cfg = LABOR_BY_REGION.get(region_name, LABOR_BY_REGION['Metropolitana'])
+    estado_key = 'baja' if str(ctx.get('labor_estado', '')).upper() == 'BAJA' else 'alta'
+    banca_key = 'bt' if str(ctx.get('labor_banca', '')).upper() == 'BANCA_TRABAJADORES' else 'bp'
+    abf_code = cfg[f'{estado_key}_{banca_key}']
+    cn = by_code[cfg['cn']]
+    for abf in cn['abfs']:
+        if abf['asignadoCod'] == abf_code:
+            return cn, abf
+    raise KeyError(f"No labor ABF for region={region_name}, estado={estado_key}, banca={banca_key}")
+
 def target_group(ctx: dict, route: dict, group_variant_to_cns: dict[tuple[str,str],list[str]]) -> tuple[str|None, str|None, str|None]:
     rid = r1_id(ctx['expanded_route_id'])
     pg = candidate_group_key(route)
@@ -482,19 +541,14 @@ def main_credit(ctx: dict, route: dict, by_code: dict[str,dict]) -> dict:
     labor_type = {'ABF':'abf','CN':'cn','CP':'cp','abf':'abf','cn':'cn','cp':'cp'}.get(ctx['labor_type'], 'abf')
     cosecha_code = DIRECT_COSECHA_CN
     cosecha = by_code[cosecha_code]
-    labor_code = LABOR_ABF_ALTA
-    labor_estado = 'Alta'
-    labor_banca = BANCA_PERSONAS
-    labor_cn = LABOR_CN
-    labor_region = by_code[LABOR_CN]['region']
-    labor_municipio = by_code[LABOR_CN]['municipio']
-    labor_age = '33'
-    if bt or ctx['labor_banca'] == 'BANCA_TRABAJADORES':
-        labor_code = LABOR_ABF_BT
-        labor_banca = BANCA_TRABAJADORES
-    if ctx['labor_estado'] == 'BAJA':
-        labor_code = LABOR_ABF_BAJA
-        labor_estado = 'Baja'
+    labor_cn_obj, labor_abf = labor_abf_for_context(ctx, by_code)
+    labor_code = labor_abf['asignadoCod']
+    labor_estado = labor_abf['asignadoEstado']
+    labor_banca = labor_abf['asignadoBanca']
+    labor_cn = labor_cn_obj['cod']
+    labor_region = labor_cn_obj['region']
+    labor_municipio = labor_cn_obj['municipio']
+    labor_age = labor_abf['asignadoEdad']
     if ctx['labor_type'] == 'CP':
         labor_type = 'cp'; labor_code = CP_CN; labor_cn = CP_CN; labor_age='0'
         labor_region = by_code[CP_CN]['region']; labor_municipio = by_code[CP_CN]['municipio']; cosecha_code = CP_CN; cosecha = by_code[cosecha_code]
@@ -687,8 +741,9 @@ def build_expected(ctx: dict, route: dict, target_cn: str|None, by_code: dict[st
         expected['codAbfActual'] = CURRENT_ASSIGNMENT_ABF if ctx['assigned_yes'] else '-1'
         expected['expected_description'] = 'Mantener asignación actual.'
     elif fc in {'ASSIGN_NEW_ABF','ASSIGN_NEW_ABF_CANCEL_NEW_CN','ASSIGN_LAST_DISB_ABF','ASSIGN_LAST_DISB_ABF_CANCEL_LAST_CN','ASSIGN_HARVEST_ABF'}:
-        expected['codCnActual'] = LABOR_CN
-        expected['codAbfActual'] = LABOR_ABF_BAJA if ctx['labor_estado']=='BAJA' else (LABOR_ABF_BT if ctx['labor_banca']=='BANCA_TRABAJADORES' else LABOR_ABF_ALTA)
+        labor_cn, labor_abf = labor_abf_for_context(ctx, by_code)
+        expected['codCnActual'] = labor_cn['cod']
+        expected['codAbfActual'] = labor_abf['asignadoCod']
         expected['expected_description'] = 'Asignar al ABF que desembolsó; codCnActual es el CN laboral al que pertenece el ABF.'
     elif fc in {'ASSIGN_AGENCY_NEW_CN','ASSIGN_AGENCY_NEW_CN_CANCEL_NEW_CN'}:
         expected['codCnActual'] = DIRECT_COSECHA_CN
@@ -1292,7 +1347,7 @@ def main_in_place(limit: int|None=None) -> None:
             rel_xml=man['input_xml_path']
             out_path=BASE / rel_xml
             out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_bytes(xml_bytes)
+            write_bytes_retry(out_path, xml_bytes)
 
             expected=build_expected(ctx, route, target_cn, by_code)
             ew.writerow({k:expected.get(k,'') for k in expected_fields})
@@ -1379,7 +1434,7 @@ def main_in_place(limit: int|None=None) -> None:
     random_summary={'random_cases_generated':random_cases,'random_candidate_rows_generated':random_candidate_rows,'random_routes':len(route_random_counts),'expected_correct_count_per_random_route':100}
     bt_summary={'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'bt_validation_pass_rate':None if bt_total==0 else round(bt_pass/bt_total,6)}
     generated_at = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.']}
+    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.']}
     for path, data in [
         (BASE/'04_validation'/'generation_summary.json', summary),
         (BASE/'04_validation'/'domain_validation_summary.json', domain_summary),

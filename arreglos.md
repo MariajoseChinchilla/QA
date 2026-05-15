@@ -141,3 +141,42 @@
 
 ### Estado
 - CORREGIDO
+
+## [2026-05-15 10:30] Arreglo: ABF labor alineado a condiciones de region
+
+### Error detectado
+- En `GPA-012__DIRECT`, y potencialmente en otras rutas con condiciones sobre labor, `participanteLabor*` podia quedar con ABF de una region distinta a la del cliente.
+- Ejemplo observado: cliente de `Nor_oriente` con ABF labor de `Metropolitana`, aunque la regla exige que la persona que desembolsa el credito sea de la misma region.
+
+### Causa probable
+- `build_context()` definia la region de labor segun la ruta, pero el generador `qa100_v6` poblaba los campos de labor con un CN/ABF fijo de `Metropolitana`.
+- Los expected para asignacion por ultimo desembolso/labor tambien usaban ese CN/ABF fijo.
+
+### Cambio aplicado
+- Se agregaron CNs de labor por region y sus ABFs asociados:
+  - `1020` / `60000x` para `Metropolitana`.
+  - `1021` / `61000x` para `Nor_oriente`.
+  - `1022` / `62000x` para `Sur_occidente`.
+- `participanteLabor*` ahora se resuelve desde `ctx['labor_region']`, `ctx['labor_estado']` y `ctx['labor_banca']`.
+- Los expected de rutas que asignan por ABF labor usan el mismo CN/ABF labor resuelto.
+- El generador completo historico tambien define CNs de labor por region y guarda `labor_cn_code` / municipio de labor para mantener consistencia.
+- Se agrego reintento corto al escribir XMLs para evitar fallos transitorios de Windows mientras otros procesos observan la carpeta.
+
+### Archivos modificados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/generate_full_qa_xml_inputs.py`
+- `00_catalogos/cn_catalog.csv`
+- `02_inputs_xml/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/generation_summary.json`
+- `04_validation/outputs/qa_validation_summary.json`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\generate_full_qa_xml_inputs.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`
+- Verificacion focal de rutas con decisiones `D11/D12/D13/D14/D31/D32/D36/D37`: 1,600 XMLs revisados, 0 errores.
+- Muestra de `GPA-012__DIRECT`: cliente `Nor_oriente`, `participanteLaborCn=1021`, `participanteLaborCod=610001`, `participanteLaborRegion=Nor_oriente`; `cnCosechaRegion=Metropolitana` permitido por regla.
+- `python .\05_scripts\run_all_validations.py --verbose` finalizo `PARTIAL` solo por los modos no canonicos de expected output ya documentados; 0 errores criticos.
+
+### Estado
+- CORREGIDO

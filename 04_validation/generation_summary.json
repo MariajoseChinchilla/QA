@@ -1,9 +1,9 @@
 {
   "artifact": "qa100",
   "output_root": "C:\\Users\\Mariajose\\Desktop\\qa100\\QA",
-  "generated_at_utc": "2026-05-15T01:33:48.179538Z",
-  "generator_version": "XML_INPUT_GENERATOR_V10_100_PER_ROUTE_SUGERIDO_EQUALS_CLIENT_ASSIGNMENT_2026_05_14",
-  "duration_seconds": 43.79,
+  "generated_at_utc": "2026-05-15T16:35:35.713469Z",
+  "generator_version": "XML_INPUT_GENERATOR_V11_SUGERIDO_EQUALS_CLIENT_ASSIGNMENT_LABOR_REGION_2026_05_15",
+  "duration_seconds": 158.69,
   "total_xml_inputs_generated": 22200,
   "expanded_routes_generated": 222,
   "core_cases_generated": 22100,
@@ -15,12 +15,12 @@
   "patrono_cases_passed_validation": 22200,
   "random_cases_generated": 9800,
   "random_routes_generated": 98,
-  "static_cn_catalog_count": 53,
-  "static_abf_total": 212,
-  "activo_financiero_static_hash": "768fc787d04e7f9d75721f42ec5619b93c87031b2d46783d9d98e5c229d8aea5",
+  "static_cn_catalog_count": 55,
+  "static_abf_total": 220,
+  "activo_financiero_static_hash": "76b51cec686514dcc6d739eba101a1acdb642a4189d5d38fb297b8f8899e809d",
   "domain_validation_failed_sampled_cases": 0,
   "cn_count_distribution": {
-    "53": 22200
+    "55": 22200
   },
   "min_abfs_per_cn_distribution": {
     "4": 22200
@@ -119,6 +119,7 @@
     "CONTROL_BT": 100
   },
   "notes": [
-    "Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco."
+    "Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.",
+    "Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite."
   ]
 }

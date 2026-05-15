@@ -129,3 +129,38 @@
 
 ### Proximo paso sugerido
 - Mantener pendiente la decision de negocio sobre los modos no canonicos de `expected_outputs.csv`.
+
+## [2026-05-15 10:30] Avance: Correccion de ABF labor por region
+
+### Que se reviso
+- Observacion puntual en `GPA-012__DIRECT`: el cliente era de `Nor_oriente`, pero `participanteLabor*` quedaba con fuerza comercial de `Metropolitana`.
+- Rutas donde las decisiones del arbol exigen condiciones sobre ABF labor: banca, estado y/o misma region que el cliente.
+- Scripts generadores y XMLs bajo `02_inputs_xml/`.
+
+### Hallazgos
+- El contexto calculaba correctamente la region esperada de labor, pero `generate_inputs_100_v6.py` siempre usaba el CN/ABF labor fijo `1020` / `60000x`, de region `Metropolitana`.
+- El CN de cosecha puede variar por regla, pero `participanteLabor*` debe cumplir las condiciones de labor cuando la regla lo exige.
+- Se agregaron CN/ABF labor por region para `Metropolitana`, `Nor_oriente` y `Sur_occidente`.
+
+### Resultado
+- PASS focal en 16 rutas y 1,600 XMLs revisados: 0 errores de banca, estado o region en `participanteLabor*`.
+- En `GPA-012__DIRECT`, `participanteLaborRegion` ahora queda `Nor_oriente` con CN labor `1021` y ABF labor `610001`; `cnCosechaRegion` puede permanecer `Metropolitana`.
+- Se regeneraron los 22,200 XMLs.
+
+### Archivos involucrados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/generate_full_qa_xml_inputs.py`
+- `00_catalogos/cn_catalog.csv`
+- `02_inputs_xml/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/generation_summary.json`
+- `04_validation/outputs/qa_validation_summary.json`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\generate_full_qa_xml_inputs.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`
+- Verificacion focal de rutas con condiciones de ABF labor: 1,600 XMLs, 0 errores.
+- `python .\05_scripts\run_all_validations.py --verbose` termino `PARTIAL` por los mismos modos no canonicos de `expected_outputs.csv`; 0 errores criticos.
+
+### Proximo paso sugerido
+- Confirmar la convencion final de los modos `ACCEPTED_SET_OR_DETERMINISTIC_SINGLETON`, `EXACT_OR_BUSINESS_ASSERTION` y `BOLSON`.
