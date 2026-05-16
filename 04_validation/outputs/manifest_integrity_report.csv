@@ -1,5 +1,5 @@
 check,status,severity,case_id,expanded_route_id,input_xml_path,message
 required_columns,PASS,INFO,,,,OK
 duplicate_case_id,PASS,INFO,,,,No hay case_id duplicados.
-manifest_cases_per_route,PASS,INFO,,,,Todas las rutas del manifest tienen 100 casos.
+manifest_cases_per_route,PASS,INFO,,,,Todas las rutas del manifest tienen 1000 casos.
 manifest_integrity,PASS,INFO,,,,"Manifest integro contra rutas, XMLs y expected output."

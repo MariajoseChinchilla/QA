@@ -1,144 +1,43 @@
-Paquete QA Blaze - qa100 v6
+Paquete QA Blaze - General post primera asignacion
 
-Cambios incluidos:
-- especialistaPatrono1/2/3 ahora son nombres de patrono; se compara contra creditoPatrono.
-- Patronos finitos: patrono1, patrono2, patrono3, patrono4 y patrono_sin_especialista para forzar No.
-- Tipo cliente derivado por regla de negocio: CE si existe estado D; CR si historial todo C; CN sin historial HD.
-- Variación controlada por ruta: edad del cliente, patrono y municipio candidato cambian entre los 100 casos sin romper la ruta.
-- Casos de selección aleatoria identificados y validados por conjunto aceptado.
-- ActivoFinanciero fijo en todos los XMLs con los mismos CNs y ABFs.
+Contenido principal:
+- 00_catalogos/: catalogos de rutas, contrato de campos y catalogos auxiliares.
+- 01_manifest/case_manifest_1000_full_v6.csv: manifest reproducible con 222,000 casos.
+- 02_inputs_xml/: XMLs separados por ruta/regla, 1000 XMLs por ruta.
+- 02_inputs_xml_flat/: todos los XMLs juntos en una sola carpeta.
+- 03_expected/expected_outputs.csv: salidas esperadas por case_id.
+- 04_validation/: reportes y resumenes de generacion/validacion.
+- 05_scripts/: scripts reproducibles.
 
-Resumen:
-{
-  "artifact": "qa100",
-  "archive_path": "/mnt/data/qa100_v6.tar.zst",
-  "archive_type": "tar.zst",
-  "generated_at_utc": "2026-05-14T18:44:20.302178Z",
-  "generator_version": "XML_INPUT_GENERATOR_V9_100_PER_ROUTE_PATRONO_RANDOM_TIPOCLIENTE_VARIATION_2026_05_14",
-  "total_xml_inputs_generated": 22200,
-  "expanded_routes_generated": 222,
-  "core_cases_generated": 22100,
-  "bt_control_cases_generated": 100,
-  "bt_control_cases_passed_validation": 100,
-  "bt_validation_pass_rate": 1.0,
-  "r2_cases_generated": 14400,
-  "r2_cases_passed_validation": 14400,
-  "r2_validation_failed_cases": 0,
-  "tipo_cliente_cases_passed_validation": 22200,
-  "tipo_cliente_validation_failed_cases": 0,
-  "patrono_cases_passed_validation": 22200,
-  "patrono_validation_failed_cases": 0,
-  "random_cases_generated": 9800,
-  "random_routes_generated": 98,
-  "static_cn_catalog_count": 53,
-  "static_abf_total": 212,
-  "activo_financiero_static_hash": "768fc787d04e7f9d75721f42ec5619b93c87031b2d46783d9d98e5c229d8aea5",
-  "activo_financiero_hash_failures": 0,
-  "domain_validation_failed_sampled_cases": 0,
-  "cn_count_distribution": {
-    "53": 22200
-  },
-  "min_abfs_per_cn_distribution": {
-    "4": 22200
-  },
-  "max_abfs_per_cn_distribution": {
-    "4": 22200
-  },
-  "labor_cosecha_different_cases": 9700,
-  "final_rule_counts": {
-    "Regla no. 1 vía Regla no. 2": 14400,
-    "Regla no. 3": 100,
-    "Regla no. 1 vía Regla no. 3": 1600,
-    "Regla no. 1": 3600,
-    "General_post_primera_asignacion": 2400,
-    "BT": 100
-  },
-  "output_class_counts": {
-    "R2_R1_VIV_DESEMBOLSO_PATRONO__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_VIV_DESEMBOLSO_PATRONO__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_VIV_DESEMBOLSO_PATRONO__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_VIV_DESEMBOLSO_PATRONO__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_VIV_DESEMBOLSO_ABFS__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_VIV_DESEMBOLSO_ABFS__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_VIV_DESEMBOLSO_ABFS__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_VIV_DESEMBOLSO_ABFS__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_TRAB_DESEMBOLSO_PATRONO__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_DESEMBOLSO_PATRONO__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_TRAB_DESEMBOLSO_PATRONO__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_DESEMBOLSO_PATRONO__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_TRAB_DESEMBOLSO_ABFS__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_DESEMBOLSO_ABFS__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_TRAB_DESEMBOLSO_ABFS__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_DESEMBOLSO_ABFS__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_TRAB_MUNICIPIO_PATRONO__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_MUNICIPIO_PATRONO__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_TRAB_MUNICIPIO_PATRONO__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_MUNICIPIO_PATRONO__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_TRAB_MUNICIPIO_ABFS__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_MUNICIPIO_ABFS__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_TRAB_MUNICIPIO_ABFS__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_MUNICIPIO_ABFS__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_VIV_MUNICIPIO_PATRONO__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_VIV_MUNICIPIO_PATRONO__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_VIV_MUNICIPIO_PATRONO__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_VIV_MUNICIPIO_PATRONO__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_VIV_MUNICIPIO_ABFS__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_VIV_MUNICIPIO_ABFS__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_VIV_MUNICIPIO_ABFS__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_VIV_MUNICIPIO_ABFS__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_TRAB_ONLY_DESEMBOLSO_PATRONO__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_ONLY_DESEMBOLSO_PATRONO__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_TRAB_ONLY_DESEMBOLSO_PATRONO__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_ONLY_DESEMBOLSO_PATRONO__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_TRAB_ONLY_DESEMBOLSO_ABFS__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_ONLY_DESEMBOLSO_ABFS__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_TRAB_ONLY_DESEMBOLSO_ABFS__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_ONLY_DESEMBOLSO_ABFS__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_TRAB_ONLY_MUNICIPIO_PATRONO__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_ONLY_MUNICIPIO_PATRONO__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_TRAB_ONLY_MUNICIPIO_PATRONO__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_ONLY_MUNICIPIO_PATRONO__R1_RANDOM_FULL_GROUP": 300,
-    "R2_R1_TRAB_ONLY_MUNICIPIO_ABFS__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_ONLY_MUNICIPIO_ABFS__R1_RANDOM_DEFICIT_GROUP": 300,
-    "R2_R1_TRAB_ONLY_MUNICIPIO_ABFS__R1_ASSIGN_CLOSEST_UNIQUE": 300,
-    "R2_R1_TRAB_ONLY_MUNICIPIO_ABFS__R1_RANDOM_FULL_GROUP": 300,
-    "R3_PENDING_BOLSON": 100,
-    "R3_R1_VIV_PATRONO__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 100,
-    "R3_R1_VIV_PATRONO__R1_RANDOM_DEFICIT_GROUP": 100,
-    "R3_R1_VIV_PATRONO__R1_ASSIGN_CLOSEST_UNIQUE": 100,
-    "R3_R1_VIV_PATRONO__R1_RANDOM_FULL_GROUP": 100,
-    "R3_R1_VIV_ABFS__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 100,
-    "R3_R1_VIV_ABFS__R1_RANDOM_DEFICIT_GROUP": 100,
-    "R3_R1_VIV_ABFS__R1_ASSIGN_CLOSEST_UNIQUE": 100,
-    "R3_R1_VIV_ABFS__R1_RANDOM_FULL_GROUP": 100,
-    "R3_R1_TRAB_PATRONO__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 100,
-    "R3_R1_TRAB_PATRONO__R1_RANDOM_DEFICIT_GROUP": 100,
-    "R3_R1_TRAB_PATRONO__R1_ASSIGN_CLOSEST_UNIQUE": 100,
-    "R3_R1_TRAB_PATRONO__R1_RANDOM_FULL_GROUP": 100,
-    "R3_R1_TRAB_ABFS__R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 100,
-    "R3_R1_TRAB_ABFS__R1_RANDOM_DEFICIT_GROUP": 100,
-    "R3_R1_TRAB_ABFS__R1_ASSIGN_CLOSEST_UNIQUE": 100,
-    "R3_R1_TRAB_ABFS__R1_RANDOM_FULL_GROUP": 100,
-    "R1_ASSIGN_DEFICIT_CLOSEST_UNIQUE": 900,
-    "R1_RANDOM_DEFICIT_GROUP": 900,
-    "R1_ASSIGN_CLOSEST_UNIQUE": 900,
-    "R1_RANDOM_FULL_GROUP": 900,
-    "KEEP_CURRENT_ASSIGNMENT": 1500,
-    "ASSIGN_NEW_ABF": 100,
-    "ASSIGN_NEW_ABF_CANCEL_NEW_CN": 100,
-    "KEEP_ABF_ASSIGNMENT": 200,
-    "ASSIGN_AGENCY_NEW_CN_CANCEL_NEW_CN": 100,
-    "ASSIGN_AGENCY_NEW_CN": 100,
-    "ASSIGN_LAST_DISB_ABF_CANCEL_LAST_CN": 100,
-    "ASSIGN_LAST_DISB_ABF": 100,
-    "ASSIGN_HARVEST_ABF": 100,
-    "CONTROL_BT": 100
-  },
-  "notes": [
-    "Cada XML incluye exactamente el mismo bloque ActivoFinanciero.",
-    "La fuerza comercial fija usa CNs/ABFs repetidos en todos los XMLs; se rotan 3 CNs candidatos por ruta para variar municipios sin perder control.",
-    "Los campos especialistaPatrono1/2/3 contienen nombres de patrono; el patrono del cliente se compara contra cualquiera de esos campos.",
-    "Tipo de cliente se deriva con la regla CE/D, CR/C, CN/sin créditos en ActivoCrediticio.",
-    "Las salidas aleatorias se validan por conjunto aceptado y se incluyen archivos específicos para identificar esos casos."
-  ]
-}
+Resumen de la version actual:
+- Generador: XML_INPUT_GENERATOR_V13_QA1000_WIDE_RANDOM_2026_05_15.
+- Rutas: 222.
+- Casos por ruta: 1000.
+- XMLs totales: 222,000.
+- XMLs en carpeta plana: 222,000.
+- CNs simulados: 103.
+- ABFs simulados: 412.
+- Maximo de ABFs por CN: 4.
+
+Convencion de salidas esperadas:
+- `codCnActual` permanece como una unica columna.
+- Las opciones de ABF esperado se expresan en `codAbfActual1`, `codAbfActual2`, `codAbfActual3` y `codAbfActual4`.
+- En rutas deterministicas, la asignacion esperada va en `codAbfActual1`.
+- En rutas aleatorias, todas las opciones validas van una por columna en una sola fila por cliente.
+- `random_candidates.csv` tambien queda en una sola fila por cliente; ya no hay una fila por opcion.
+
+Reglas de datos incorporadas:
+- `abfSugerido*` espeja la asignacion actual del cliente cuando existe; si no existe ABF sugerido, todos los campos de sugerido quedan vacios.
+- `participanteLabor*` representa la persona que desembolso el credito y cumple las condiciones de banca, estado y region exigidas por la ruta.
+- El CN de cosecha puede diferir del CN labor cuando la regla lo permite.
+- `codCliente` y `dpiCliente` son unicos en todo el paquete.
+
+Validaciones ejecutadas:
+- Compilacion de scripts: PASS.
+- Estructura del repo: PASS.
+- Manifest: PASS.
+- Validacion integral muestral `--limit 10000`: PASS, 0 issues.
+- Conteo completo de expected/manifest/carpeta plana: PASS.
+- Unicidad completa de `codCliente` y `dpiCliente`: PASS.
+- Pares esperados CN/ABF contra catalogo: PASS.
+- Muestra transversal de todas las rutas: PASS.

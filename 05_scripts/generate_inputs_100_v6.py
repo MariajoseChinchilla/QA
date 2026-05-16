@@ -24,14 +24,16 @@ spec = importlib.util.spec_from_file_location('qa_base_gen', BASE_GEN)
 qa = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(qa)  # type: ignore
 
-MANIFEST = BASE / '01_manifest' / 'case_manifest_100_full_v6.csv'
+CASES_PER_ROUTE = 1000
+MANIFEST = BASE / '01_manifest' / 'case_manifest_1000_full_v6.csv'
 CATALOG = BASE / '00_catalogos' / 'catalogo_rutas_arbol_expandido_general_post_full_with_bt_control.csv'
 FIELD_CONTRACT = BASE / '00_catalogos' / 'field_contract_arbol_expandido_general_post_primera_asignacion.csv'
 SCENARIOS = BASE / '00_catalogos' / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 ARCHIVE = BASE / 'qa100_v6.tar.zst'
 ROOT_NAME = 'qa100'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V12_GENERAL_POST_TREE_ALIGNMENT_2026_05_15'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V13_QA1000_WIDE_RANDOM_2026_05_15'
 RUN_DATE = '2026-05-14'
+FLAT_XML_DIR = '02_inputs_xml_flat'
 
 # Patronos finitos. Los campos especialistaPatrono1/2/3 contienen NOMBRES de patrono.
 PATRONO_CATALOG = [
@@ -242,18 +244,60 @@ def candidate_group_key(route: dict) -> str | None:
     # La variación de municipios se logra con 3 CNs alternos por grupo/variante.
     return f'{patrono}_{hist}_{region}'
 
-def load_catalog() -> dict[str, dict]:
+def load_catalog_rows() -> list[dict]:
     with CATALOG.open(newline='', encoding='utf-8-sig') as f:
-        return {r['expanded_route_id']: r for r in csv.DictReader(f)}
+        return list(csv.DictReader(f))
+
+def load_catalog() -> dict[str, dict]:
+    return {r['expanded_route_id']: r for r in load_catalog_rows()}
+
+def build_manifest_rows_from_catalog(catalog_rows: list[dict], limit: int|None=None) -> list[dict]:
+    rows=[]
+    for route_idx, route in enumerate(catalog_rows, start=1):
+        route_cases = int(route.get('target_cases') or CASES_PER_ROUTE)
+        if route_cases != CASES_PER_ROUTE:
+            route_cases = CASES_PER_ROUTE
+        for case_number in range(1, route_cases + 1):
+            global_case_number = (route_idx - 1) * CASES_PER_ROUTE + case_number
+            case_id = f"{route['expanded_route_id']}__{case_number:04d}"
+            rows.append({
+                'case_id': case_id,
+                'expanded_route_id': route['expanded_route_id'],
+                'general_route_id': route['general_route_id'],
+                'case_number': str(case_number),
+                'global_case_number': str(global_case_number),
+                'seed': str(240000000000000 + global_case_number),
+                'included_in_core': route['included_in_core'],
+                'route_depth': route['route_depth'],
+                'final_rule': route['final_rule'],
+                'final_output_class_id': route['final_output_class_id'],
+                'expected_mode': route['expected_mode'],
+                'input_xml_path': f"02_inputs_xml/{route['expanded_route_id']}/{case_number:04d}.xml",
+                'input_xml_flat_path': f"{FLAT_XML_DIR}/{case_id}.xml",
+                'expected_output_path': '03_expected/expected_outputs.csv',
+                'tree_version': 'General_post_primera_asignacion_full',
+                'mapping_version': 'v6',
+                'generator_version': 'GENERATOR_MANIFEST_V3_1000_PER_ROUTE',
+            })
+            if limit is not None and len(rows) >= limit:
+                return rows
+    return rows
 
 def load_manifest_rows(limit: int|None=None) -> list[dict]:
-    rows=[]
-    with MANIFEST.open(newline='', encoding='utf-8-sig') as f:
-        for i,r in enumerate(csv.DictReader(f), start=1):
-            if limit is not None and i > limit:
-                break
-            rows.append(r)
-    return rows
+    return build_manifest_rows_from_catalog(load_catalog_rows(), limit)
+
+def write_manifest_csv(path: Path, rows: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fields=[
+        'case_id','expanded_route_id','general_route_id','case_number','global_case_number','seed',
+        'included_in_core','route_depth','final_rule','final_output_class_id','expected_mode',
+        'input_xml_path','input_xml_flat_path','expected_output_path','tree_version',
+        'mapping_version','generator_version'
+    ]
+    with path.open('w', newline='', encoding='utf-8') as f:
+        w=csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        w.writerows({k: r.get(k, '') for k in fields} for r in rows)
 
 def is_specialist(abf: dict, patrono_nombre: str) -> bool:
     return patrono_nombre in {abf.get('especialistaPatrono1',''), abf.get('especialistaPatrono2',''), abf.get('especialistaPatrono3','')}
@@ -531,10 +575,10 @@ def assign_case_overrides(ctx: dict, route: dict) -> None:
     ctx['cliente_patrono_cod'] = PATRONO_CODE_BY_NAME[patrono_nombre]
 
 def stable_client_fields(ctx: dict) -> dict:
-    seed = ctx['seed']
+    global_case_number = int(ctx.get('global_case_number') or ctx.get('seed') or 0)
     return {
-        'clienteCod': str(10000000 + (seed % 9000000)),
-        'clienteDpi': str(3000000000000 + (seed % 700000000000)),
+        'clienteCod': str(10000000 + global_case_number),
+        'clienteDpi': str(3000000000000 + global_case_number),
         'clienteEdad': str(ctx['cliente_edad']),
         'clienteNombre': 'Cliente QA ' + ctx['case_id'],
     }
@@ -774,9 +818,11 @@ def build_expected(ctx: dict, route: dict, target_cn: str|None, by_code: dict[st
     }
     rid = r1_id(ctx['expanded_route_id'])
     if fc == 'CONTROL_BT':
+        expected['expected_mode'] = 'HANDOFF_CONTROL'
         expected['expected_control_tree'] = 'BT'
         expected['expected_description'] = 'Redirigir a árbol BT; fuera del flujo ABF/Banca Personas.'
     elif fc == 'R3_PENDING_BOLSON':
+        expected['expected_mode'] = 'BOLSON'
         expected['bolson'] = 'PENDIENTES'
         expected['expected_description'] = 'Asignar al bolsón de clientes pendientes.'
     elif is_r1_route(ctx['expanded_route_id']) and target_cn:
@@ -785,29 +831,65 @@ def build_expected(ctx: dict, route: dict, target_cn: str|None, by_code: dict[st
         cn_obj = by_code[target_cn]
         accepted = target_abfs_for_expected(cn_obj, patrono_filter, rid or '', ctx['cliente_patrono_nombre'])
         if rid in {'R1-002','R1-004'}:
+            expected['expected_mode'] = 'ACCEPTED_SET'
             expected['accepted_cod_cn_set'] = target_cn
             expected['accepted_cod_abf_set'] = '|'.join(accepted)
             expected['is_random_selection'] = 'Si'
-            expected['expected_description'] = 'Selección aleatoria/conjunto aceptado: cualquier ABF listado en accepted_cod_abf_set es válido.'
+            expected['expected_description'] = 'Selección aleatoria: cualquier ABF listado en codAbfActual1..N es válido.'
         else:
+            expected['expected_mode'] = 'EXACT'
             expected['codAbfActual'] = accepted[0] if accepted else ''
             expected['expected_description'] = 'Asignar al ABF candidato único esperado.'
     elif fc in {'KEEP_CURRENT_ASSIGNMENT', 'KEEP_ABF_ASSIGNMENT'}:
+        expected['expected_mode'] = 'EXACT'
         expected['codCnActual'] = current_cn
         expected['codAbfActual'] = current_abf
         expected['expected_description'] = 'Mantener asignación actual.'
     elif fc in {'ASSIGN_NEW_ABF','ASSIGN_NEW_ABF_CANCEL_NEW_CN','ASSIGN_LAST_DISB_ABF','ASSIGN_LAST_DISB_ABF_CANCEL_LAST_CN','ASSIGN_HARVEST_ABF'}:
+        expected['expected_mode'] = 'EXACT'
         labor_cn, labor_abf = labor_abf_for_context(ctx, by_code)
         expected['codCnActual'] = labor_cn['cod']
         expected['codAbfActual'] = labor_abf['asignadoCod']
         expected['expected_description'] = 'Asignar al ABF que desembolsó; codCnActual es el CN laboral al que pertenece el ABF.'
     elif fc in {'ASSIGN_AGENCY_NEW_CN','ASSIGN_AGENCY_NEW_CN_CANCEL_NEW_CN'}:
+        expected['expected_mode'] = 'EXACT'
         expected['codCnActual'] = harvest_cn_for_context(ctx, route, target_cn, by_code)['cod']
         expected['codAbfActual'] = '-1'
         expected['expected_description'] = 'Asignar a cartera agencia del nuevo CN.'
     else:
         expected['expected_description'] = 'Salida no clasificada explícitamente; revisar catálogo.'
     return expected
+
+def abf_slot_fields(max_slots: int) -> list[str]:
+    return [f'codAbfActual{i}' for i in range(1, max_slots + 1)]
+
+def expected_abf_values(expected: dict) -> list[str]:
+    if expected.get('is_random_selection') == 'Si':
+        return [x for x in expected.get('accepted_cod_abf_set', '').split('|') if x]
+    abf = expected.get('codAbfActual', '')
+    return [abf] if abf else []
+
+def expected_row_for_csv(expected: dict, max_slots: int) -> dict:
+    row = dict(expected)
+    for field in abf_slot_fields(max_slots):
+        row[field] = ''
+    for idx, abf in enumerate(expected_abf_values(expected)[:max_slots], start=1):
+        row[f'codAbfActual{idx}'] = abf
+    return row
+
+def ensure_hardlink(src: Path, dst: Path) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        try:
+            if os.path.samefile(src, dst):
+                return
+        except OSError:
+            pass
+        dst.unlink()
+    try:
+        os.link(src, dst)
+    except OSError:
+        write_bytes_retry(dst, src.read_bytes())
 
 def tar_add_bytes(tar: tarfile.TarFile, arcname: str, data: bytes, mtime: int) -> None:
     info = tarfile.TarInfo(arcname); info.size = len(data); info.mtime = mtime; info.mode = 0o644
@@ -954,11 +1036,17 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--score', required=True)
     args=ap.parse_args()
+    expected_per_route=1000
     valid=defaultdict(set); meta={}
     with open(args.candidates, newline='', encoding='utf-8') as f:
         for r in csv.DictReader(f):
-            key=(r['case_id'], r['candidate_cod_cn_actual'], r['candidate_cod_abf_actual'])
-            valid[r['case_id']].add((r['candidate_cod_cn_actual'], r['candidate_cod_abf_actual']))
+            cn=(r.get('codCnActual') or r.get('candidate_cod_cn_actual') or '').strip()
+            abfs=[(r.get(k) or '').strip() for k in sorted(r) if k.startswith('codAbfActual')]
+            if not abfs and r.get('candidate_cod_abf_actual'):
+                abfs=[r.get('candidate_cod_abf_actual','').strip()]
+            for abf in abfs:
+                if cn and abf:
+                    valid[r['case_id']].add((cn, abf))
             meta[r['case_id']]=r['expanded_route_id']
     rows=[]; score=defaultdict(lambda:{'valid':0,'invalid':0,'pending':0})
     with open(args.responses, newline='', encoding='utf-8') as f:
@@ -979,7 +1067,7 @@ def main():
         fields=['expanded_route_id','actual_correct_count','invalid_random_selection_count','pending_count','branch_status']
         w=csv.DictWriter(f, fieldnames=fields); w.writeheader()
         for route,s in sorted(score.items()):
-            branch_status='PASS' if s['valid']==100 and s['invalid']==0 and s['pending']==0 else 'REVIEW'
+            branch_status='PASS' if s['valid']==expected_per_route and s['invalid']==0 and s['pending']==0 else 'REVIEW'
             w.writerow({'expanded_route_id':route,'actual_correct_count':s['valid'],'invalid_random_selection_count':s['invalid'],'pending_count':s['pending'],'branch_status':branch_status})
 if __name__=='__main__': main()
 ''', encoding='utf-8')
@@ -987,11 +1075,14 @@ if __name__=='__main__': main()
 def main(limit: int|None=None) -> None:
     start=time.time()
     if ARCHIVE.exists(): ARCHIVE.unlink()
-    catalog=load_catalog()
-    manifest_rows=load_manifest_rows(limit)
+    catalog_rows=load_catalog_rows()
+    catalog={r['expanded_route_id']: r for r in catalog_rows}
+    manifest_rows=build_manifest_rows_from_catalog(catalog_rows, limit)
     cns, group_variant_to_cns, by_code = build_static_catalog(catalog)
     static_activo_financiero = '<ActivoFinanciero>' + ''.join(centro_xml(cn) for cn in cns) + '</ActivoFinanciero>'
     static_hash = hashlib.sha256(static_activo_financiero.encode('utf-8')).hexdigest()
+    max_abf_slots=max(len(cn['abfs']) for cn in cns)
+    abf_fields=abf_slot_fields(max_abf_slots)
     tmpdir=Path(tempfile.mkdtemp(prefix='qa100_v6_', dir=str(BASE)))
     mtime=int(time.time())
     expected_csv=tmpdir/'expected_outputs.csv'
@@ -1019,18 +1110,18 @@ def main(limit: int|None=None) -> None:
     write_static_cn_catalog_csv(cn_catalog_csv, cns)
     write_patrono_catalog_csv(patrono_catalog_csv)
     write_validate_random_script(validate_random_py)
-    manifest_copy=tmpdir/'case_manifest_100_full_v6.csv'
-    manifest_copy.write_bytes(MANIFEST.read_bytes())
+    manifest_copy=tmpdir/'case_manifest_1000_full_v6.csv'
+    write_manifest_csv(manifest_copy, manifest_rows)
 
-    expected_fields=['case_id','expanded_route_id','general_route_id','included_in_core','expected_mode','final_output_class_id','codCliente','dpiCliente','codCnActual','codAbfActual','codCnAnterior','codAbfAnterior','bolson','accepted_cod_cn_set','accepted_cod_abf_set','expected_control_tree','expected_description','is_random_selection','cliente_patrono','tipo_cliente_expected']
+    expected_fields=['case_id','expanded_route_id','general_route_id','included_in_core','expected_mode','final_output_class_id','codCliente','dpiCliente','codCnActual',*abf_fields,'codCnAnterior','codAbfAnterior','bolson','expected_control_tree','expected_description','is_random_selection','cliente_patrono','tipo_cliente_expected']
     validation_fields=['case_id','expanded_route_id','general_route_id','final_output_class_id','input_xml_path','xml_generated','expected_generated','all_static_cn_catalog_present','cn_count','min_abfs_per_cn','max_abfs_per_cn','activo_financiero_hash','activo_financiero_hash_matches_static','domain_validation_pass','r2_case','r2_validation_pass','tipo_cliente_pass','patrono_validation_pass','bt_control_case','bt_credito_banca_ok','bt_expected_tree_ok','labor_cn','cosecha_cn','labor_cosecha_can_differ','cliente_edad','cliente_patrono','tipo_cliente_expected','target_cn','notes']
     r2_fields=['case_id','expanded_route_id','input_xml_path','r2_decisions','clienteMunicipioVivienda','clienteMunicipioTrabajo','target_cn','target_cn_municipio','target_cn_departamento','has_hist_vivienda','has_hist_trabajo','target_has_patrono_specialist','cliente_patrono','r2_pass','notes']
     tipo_fields=['case_id','expanded_route_id','input_xml_path','tipo_cliente_expected','tipo_cliente_derived','tipo_cliente_pass','credit_states','history_credit_count','rule_note']
     patrono_fields=['case_id','expanded_route_id','input_xml_path','cliente_patrono','expected_specialist_answer','global_abf_specialist_exists','target_scope_specialist_exists','patrono_validation_pass','patrono_field_rule']
     bt_fields=['case_id','input_xml_path','credito_banca_values','abf_sugerido_banca','expected_control_tree','pass_bt_validation']
     sample_fields=['case_id','input_xml_path','sha256','activo_financiero_hash','domain_validation_pass','r2_case','r2_pass','tipo_cliente_pass','patrono_validation_pass']
-    rand_case_fields=['case_id','expanded_route_id','input_xml_path','is_random_selection','validation_mode','expected_correct_count_for_branch','accepted_cod_cn_set','accepted_cod_abf_set']
-    rand_candidate_fields=['case_id','expanded_route_id','input_xml_path','candidate_cod_cn_actual','candidate_cod_abf_actual','candidate_valid_flag','candidate_selected_flag_after_blaze']
+    rand_case_fields=['case_id','expanded_route_id','input_xml_path','is_random_selection','validation_mode','expected_correct_count_for_branch','codCnActual',*abf_fields]
+    rand_candidate_fields=[*rand_case_fields,'candidate_valid_flag','candidate_selected_flag_after_blaze']
     rand_response_fields=['case_id','expanded_route_id','input_xml_path','actual_cod_cn_actual','actual_cod_abf_actual']
     rand_score_fields=['expanded_route_id','random_cases_expected','expected_correct_count','validation_rule']
 
@@ -1065,6 +1156,7 @@ def main(limit: int|None=None) -> None:
                 for idx, man in enumerate(manifest_rows, start=1):
                     route=catalog[man['expanded_route_id']]
                     ctx=qa.build_context(man, route)
+                    ctx['global_case_number']=int(man.get('global_case_number') or idx)
                     assign_case_overrides(ctx, route)
                     pg, rid, target_cn = target_group(ctx, route, group_variant_to_cns)
                     creditos=build_creditos(ctx, route, target_cn, by_code)
@@ -1072,21 +1164,24 @@ def main(limit: int|None=None) -> None:
                     xml_bytes=xml.encode('utf-8')
                     rel_xml=man['input_xml_path']
                     tar_add_bytes(tar, f'{ROOT_NAME}/{rel_xml}', xml_bytes, mtime)
+                    tar_add_bytes(tar, f'{ROOT_NAME}/{man["input_xml_flat_path"]}', xml_bytes, mtime)
                     expected=build_expected(ctx, route, target_cn, by_code)
-                    ew.writerow({k:expected.get(k,'') for k in expected_fields})
+                    expected_row=expected_row_for_csv(expected, max_abf_slots)
+                    ew.writerow({k:expected_row.get(k,'') for k in expected_fields})
 
                     if expected.get('is_random_selection') == 'Si':
                         random_cases += 1
                         route_random_counts[ctx['expanded_route_id']] += 1
-                        rcw.writerow({
+                        random_base={
                             'case_id': ctx['case_id'], 'expanded_route_id': ctx['expanded_route_id'], 'input_xml_path': rel_xml,
-                            'is_random_selection': 'Si', 'validation_mode': 'ACCEPTED_SET', 'expected_correct_count_for_branch': '100',
-                            'accepted_cod_cn_set': expected.get('accepted_cod_cn_set',''), 'accepted_cod_abf_set': expected.get('accepted_cod_abf_set','')
-                        })
+                            'is_random_selection': 'Si', 'validation_mode': 'ACCEPTED_SET', 'expected_correct_count_for_branch': str(CASES_PER_ROUTE),
+                            'codCnActual': expected_row.get('codCnActual','')
+                        }
+                        random_base.update({field: expected_row.get(field, '') for field in abf_fields})
+                        rcw.writerow(random_base)
                         rrw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'actual_cod_cn_actual':'','actual_cod_abf_actual':''})
-                        for abf in [x for x in expected.get('accepted_cod_abf_set','').split('|') if x]:
-                            random_candidate_rows += 1
-                            rcandw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'candidate_cod_cn_actual':expected.get('accepted_cod_cn_set',''),'candidate_cod_abf_actual':abf,'candidate_valid_flag':'Si','candidate_selected_flag_after_blaze':''})
+                        random_candidate_rows += 1
+                        rcandw.writerow({**random_base, 'candidate_valid_flag':'Si','candidate_selected_flag_after_blaze':''})
 
                     domain_ok=True
                     if idx <= 50 or idx % 1000 == 0:
@@ -1158,7 +1253,7 @@ def main(limit: int|None=None) -> None:
             with random_branch_score_csv.open('w',newline='',encoding='utf-8') as rb:
                 rbw=csv.DictWriter(rb, fieldnames=rand_score_fields); rbw.writeheader()
                 for k,v in sorted(route_random_counts.items()):
-                    rbw.writerow({'expanded_route_id':k,'random_cases_expected':v,'expected_correct_count':'100','validation_rule':'PASS si Blaze devuelve un codCnActual/codAbfActual dentro del conjunto aceptado en los 100 casos de la rama.'})
+                    rbw.writerow({'expanded_route_id':k,'random_cases_expected':v,'expected_correct_count':str(CASES_PER_ROUTE),'validation_rule':f'PASS si Blaze devuelve un codCnActual y un codAbfActual dentro de las columnas codAbfActual1..N en los {CASES_PER_ROUTE} casos de la rama.'})
 
             domain_summary={
                 'domain_validation_failed_sampled_cases': domain_fail_total,
@@ -1206,7 +1301,8 @@ def main(limit: int|None=None) -> None:
                 'random_cases_generated': random_cases,
                 'random_candidate_rows_generated': random_candidate_rows,
                 'random_routes': len(route_random_counts),
-                'expected_correct_count_per_random_route': 100,
+                'expected_correct_count_per_random_route': CASES_PER_ROUTE,
+                'random_candidate_layout': 'una fila por cliente con codAbfActual1..N',
                 'validation_files': {
                     'case_identifier': '04_validation/random_case_id.csv',
                     'candidate_options': '04_validation/random_candidates.csv',
@@ -1221,7 +1317,11 @@ def main(limit: int|None=None) -> None:
                 'archive_type':'tar.zst',
                 'generated_at_utc':datetime.utcnow().isoformat()+'Z',
                 'generator_version':RUN_VERSION,
+                'cases_per_route':CASES_PER_ROUTE,
                 'total_xml_inputs_generated':counts['total_cases'],
+                'flat_xml_folder':FLAT_XML_DIR,
+                'flat_xml_count':counts['total_cases'],
+                'expected_abf_slot_count':max_abf_slots,
                 'expanded_routes_generated':len(route_counts),
                 'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),
                 'bt_control_cases_generated':bt_total,
@@ -1252,7 +1352,8 @@ def main(limit: int|None=None) -> None:
                     'La fuerza comercial fija usa CNs/ABFs repetidos en todos los XMLs; se rotan 3 CNs candidatos por ruta para variar municipios sin perder control.',
                     'Los campos especialistaPatrono1/2/3 contienen nombres de patrono; el patrono del cliente se compara contra cualquiera de esos campos.',
                     'Tipo de cliente se deriva con la regla CE/D, CR/C, CN/sin créditos en ActivoCrediticio.',
-                    'Las salidas aleatorias se validan por conjunto aceptado y se incluyen archivos específicos para identificar esos casos.'
+                    'Las salidas aleatorias se consolidan en una fila por cliente con columnas codAbfActual1..N; codCnActual permanece unico.',
+                    'La carpeta plana contiene todos los XMLs juntos, ademas de las carpetas separadas por ruta.'
                 ]
             }
             generation_summary_json.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -1268,8 +1369,8 @@ Cambios incluidos:
 - especialistaPatrono1/2/3 ahora son nombres de patrono; se compara contra creditoPatrono.
 - Patronos finitos: patrono1, patrono2, patrono3, patrono4 y patrono_sin_especialista para forzar No.
 - Tipo cliente derivado por regla de negocio: CE si existe estado D; CR si historial todo C; CN sin historial HD.
-- Variación controlada por ruta: edad del cliente, patrono y municipio candidato cambian entre los 100 casos sin romper la ruta.
-- Casos de selección aleatoria identificados y validados por conjunto aceptado.
+- Variación controlada por ruta: edad del cliente, patrono y municipio candidato cambian entre los {CASES_PER_ROUTE} casos sin romper la ruta.
+- Casos de selección aleatoria identificados en una fila por cliente con columnas codAbfActual1..N.
 - ActivoFinanciero fijo en todos los XMLs con los mismos CNs y ABFs.
 
 Resumen:
@@ -1323,7 +1424,7 @@ Resumen:
         (BASE/'bt_validation_summary_qa100_v6.json').write_bytes(bt_summary_json.read_bytes())
         (BASE/'cn_catalog_qa100_v6.csv').write_bytes(cn_catalog_csv.read_bytes())
         (BASE/'patrono_catalog_qa100_v6.csv').write_bytes(patrono_catalog_csv.read_bytes())
-        (BASE/'case_manifest_100_full_v6.csv').write_bytes(manifest_copy.read_bytes())
+        (BASE/'case_manifest_1000_full_v6.csv').write_bytes(manifest_copy.read_bytes())
         (BASE/'random_case_id_qa100_v6.csv').write_bytes(random_case_id_csv.read_bytes())
         (BASE/'random_candidates_qa100_v6.csv').write_bytes(random_candidates_csv.read_bytes())
         (BASE/'random_response_template_qa100_v6.csv').write_bytes(random_response_template_csv.read_bytes())
@@ -1339,25 +1440,33 @@ Resumen:
 
 def main_in_place(limit: int|None=None) -> None:
     start=time.time()
-    catalog=load_catalog()
-    manifest_rows=load_manifest_rows(limit)
+    catalog_rows=load_catalog_rows()
+    catalog={r['expanded_route_id']: r for r in catalog_rows}
+    manifest_rows=build_manifest_rows_from_catalog(catalog_rows, limit)
+    if limit is None:
+        write_manifest_csv(MANIFEST, manifest_rows)
     cns, group_variant_to_cns, by_code = build_static_catalog(catalog)
     static_activo_financiero = '<ActivoFinanciero>' + ''.join(centro_xml(cn) for cn in cns) + '</ActivoFinanciero>'
     static_hash = hashlib.sha256(static_activo_financiero.encode('utf-8')).hexdigest()
+    max_abf_slots=max(len(cn['abfs']) for cn in cns)
+    abf_fields=abf_slot_fields(max_abf_slots)
 
-    for rel in ['02_inputs_xml', '03_expected', '04_validation', '00_catalogos']:
+    for rel in ['02_inputs_xml', FLAT_XML_DIR, '03_expected', '04_validation', '00_catalogos']:
         (BASE / rel).mkdir(parents=True, exist_ok=True)
+    if limit is None:
+        for stale in (BASE / FLAT_XML_DIR).glob('*.xml'):
+            stale.unlink()
     write_static_cn_catalog_csv(BASE / '00_catalogos' / 'cn_catalog.csv', cns)
     write_patrono_catalog_csv(BASE / '00_catalogos' / 'patrono_catalog.csv')
 
-    expected_fields=['case_id','expanded_route_id','general_route_id','included_in_core','expected_mode','final_output_class_id','codCliente','dpiCliente','codCnActual','codAbfActual','codCnAnterior','codAbfAnterior','bolson','accepted_cod_cn_set','accepted_cod_abf_set','expected_control_tree','expected_description','is_random_selection','cliente_patrono','tipo_cliente_expected']
+    expected_fields=['case_id','expanded_route_id','general_route_id','included_in_core','expected_mode','final_output_class_id','codCliente','dpiCliente','codCnActual',*abf_fields,'codCnAnterior','codAbfAnterior','bolson','expected_control_tree','expected_description','is_random_selection','cliente_patrono','tipo_cliente_expected']
     validation_fields=['case_id','expanded_route_id','general_route_id','final_output_class_id','input_xml_path','xml_generated','expected_generated','all_static_cn_catalog_present','cn_count','min_abfs_per_cn','max_abfs_per_cn','activo_financiero_hash','activo_financiero_hash_matches_static','domain_validation_pass','r2_case','r2_validation_pass','tipo_cliente_pass','patrono_validation_pass','bt_control_case','bt_credito_banca_ok','bt_expected_tree_ok','labor_cn','cosecha_cn','labor_cosecha_can_differ','cliente_edad','cliente_patrono','tipo_cliente_expected','target_cn','notes']
     r2_fields=['case_id','expanded_route_id','input_xml_path','r2_decisions','clienteMunicipioVivienda','clienteMunicipioTrabajo','target_cn','target_cn_municipio','target_cn_departamento','has_hist_vivienda','has_hist_trabajo','target_has_patrono_specialist','cliente_patrono','r2_pass','notes']
     tipo_fields=['case_id','expanded_route_id','input_xml_path','tipo_cliente_expected','tipo_cliente_derived','tipo_cliente_pass','credit_states','history_credit_count','rule_note']
     patrono_fields=['case_id','expanded_route_id','input_xml_path','cliente_patrono','expected_specialist_answer','global_abf_specialist_exists','target_scope_specialist_exists','patrono_validation_pass','patrono_field_rule']
     bt_fields=['case_id','input_xml_path','credito_banca_values','abf_sugerido_banca','expected_control_tree','pass_bt_validation']
-    rand_case_fields=['case_id','expanded_route_id','input_xml_path','is_random_selection','validation_mode','expected_correct_count_for_branch','accepted_cod_cn_set','accepted_cod_abf_set']
-    rand_candidate_fields=['case_id','expanded_route_id','input_xml_path','candidate_cod_cn_actual','candidate_cod_abf_actual','candidate_valid_flag','candidate_selected_flag_after_blaze']
+    rand_case_fields=['case_id','expanded_route_id','input_xml_path','is_random_selection','validation_mode','expected_correct_count_for_branch','codCnActual',*abf_fields]
+    rand_candidate_fields=[*rand_case_fields,'candidate_valid_flag','candidate_selected_flag_after_blaze']
     rand_response_fields=['case_id','expanded_route_id','input_xml_path','actual_cod_cn_actual','actual_cod_abf_actual']
     rand_score_fields=['expanded_route_id','random_cases_expected','expected_correct_count','validation_rule']
     sample_fields=['case_id','input_xml_path','sha256','activo_financiero_hash','domain_validation_pass','r2_case','r2_pass','tipo_cliente_pass','patrono_validation_pass']
@@ -1395,6 +1504,7 @@ def main_in_place(limit: int|None=None) -> None:
         for idx, man in enumerate(manifest_rows, start=1):
             route=catalog[man['expanded_route_id']]
             ctx=qa.build_context(man, route)
+            ctx['global_case_number']=int(man.get('global_case_number') or idx)
             assign_case_overrides(ctx, route)
             _pg, _rid, target_cn = target_group(ctx, route, group_variant_to_cns)
             creditos=build_creditos(ctx, route, target_cn, by_code)
@@ -1404,17 +1514,20 @@ def main_in_place(limit: int|None=None) -> None:
             out_path=BASE / rel_xml
             out_path.parent.mkdir(parents=True, exist_ok=True)
             write_bytes_retry(out_path, xml_bytes)
+            ensure_hardlink(out_path, BASE / man['input_xml_flat_path'])
 
             expected=build_expected(ctx, route, target_cn, by_code)
-            ew.writerow({k:expected.get(k,'') for k in expected_fields})
+            expected_row=expected_row_for_csv(expected, max_abf_slots)
+            ew.writerow({k:expected_row.get(k,'') for k in expected_fields})
             if expected.get('is_random_selection') == 'Si':
                 random_cases += 1
                 route_random_counts[ctx['expanded_route_id']] += 1
-                rcw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'is_random_selection':'Si','validation_mode':'ACCEPTED_SET','expected_correct_count_for_branch':'100','accepted_cod_cn_set':expected.get('accepted_cod_cn_set',''),'accepted_cod_abf_set':expected.get('accepted_cod_abf_set','')})
+                random_base={'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'is_random_selection':'Si','validation_mode':'ACCEPTED_SET','expected_correct_count_for_branch':str(CASES_PER_ROUTE),'codCnActual':expected_row.get('codCnActual','')}
+                random_base.update({field: expected_row.get(field, '') for field in abf_fields})
+                rcw.writerow(random_base)
                 rrw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'actual_cod_cn_actual':'','actual_cod_abf_actual':''})
-                for abf in [x for x in expected.get('accepted_cod_abf_set','').split('|') if x]:
-                    random_candidate_rows += 1
-                    rcandw.writerow({'case_id':ctx['case_id'],'expanded_route_id':ctx['expanded_route_id'],'input_xml_path':rel_xml,'candidate_cod_cn_actual':expected.get('accepted_cod_cn_set',''),'candidate_cod_abf_actual':abf,'candidate_valid_flag':'Si','candidate_selected_flag_after_blaze':''})
+                random_candidate_rows += 1
+                rcandw.writerow({**random_base, 'candidate_valid_flag':'Si','candidate_selected_flag_after_blaze':''})
 
             domain_ok=True
             if idx <= 50 or idx % 1000 == 0:
@@ -1478,7 +1591,7 @@ def main_in_place(limit: int|None=None) -> None:
     with random_branch_score_csv.open('w',newline='',encoding='utf-8') as rb:
         rbw=csv.DictWriter(rb, fieldnames=rand_score_fields); rbw.writeheader()
         for k,v in sorted(route_random_counts.items()):
-            rbw.writerow({'expanded_route_id':k,'random_cases_expected':v,'expected_correct_count':'100','validation_rule':'PASS si Blaze devuelve un codCnActual/codAbfActual dentro del conjunto aceptado en los 100 casos de la rama.'})
+            rbw.writerow({'expanded_route_id':k,'random_cases_expected':v,'expected_correct_count':str(CASES_PER_ROUTE),'validation_rule':f'PASS si Blaze devuelve un codCnActual y un codAbfActual dentro de las columnas codAbfActual1..N en los {CASES_PER_ROUTE} casos de la rama.'})
     if first_xml_full:
         (BASE/'04_validation'/'sample_input_qa100_v6.xml').write_text(first_xml_full, encoding='utf-8')
         (BASE/'04_validation'/'first_xml_preview.txt').write_text(first_xml_full[:12000], encoding='utf-8')
@@ -1487,10 +1600,10 @@ def main_in_place(limit: int|None=None) -> None:
     r2_summary={'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'r2_validation_failed_cases':r2_total-r2_pass_count,'r2_validation_pass_rate':None if r2_total==0 else round(r2_pass_count/r2_total,6),'route_r2_failures':dict(route_r2_failures)}
     tipo_summary={'tipo_cliente_cases_generated':tipo_total,'tipo_cliente_cases_passed_validation':tipo_pass_count,'tipo_cliente_validation_failed_cases':tipo_total-tipo_pass_count,'tipo_cliente_validation_pass_rate':None if tipo_total==0 else round(tipo_pass_count/tipo_total,6),'route_tipo_failures':dict(route_tipo_failures)}
     patrono_summary={'patrono_cases_generated':patrono_total,'patrono_cases_passed_validation':patrono_pass_count,'patrono_validation_failed_cases':patrono_total-patrono_pass_count,'patrono_validation_pass_rate':None if patrono_total==0 else round(patrono_pass_count/patrono_total,6),'route_patrono_failures':dict(route_patrono_failures)}
-    random_summary={'random_cases_generated':random_cases,'random_candidate_rows_generated':random_candidate_rows,'random_routes':len(route_random_counts),'expected_correct_count_per_random_route':100}
+    random_summary={'random_cases_generated':random_cases,'random_candidate_rows_generated':random_candidate_rows,'random_routes':len(route_random_counts),'expected_correct_count_per_random_route':CASES_PER_ROUTE,'random_candidate_layout':'una fila por cliente con codAbfActual1..N'}
     bt_summary={'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'bt_validation_pass_rate':None if bt_total==0 else round(bt_pass/bt_total,6)}
     generated_at = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.','Alinea General post primera asignacion: ABF asignado en baja para D06, asesor asignado para D25, baja temporal D16/D34 y CN de cosecha por region/ruta.']}
+    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'cases_per_route':CASES_PER_ROUTE,'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'flat_xml_folder':FLAT_XML_DIR,'flat_xml_count':counts['total_cases'],'expected_abf_slot_count':max_abf_slots,'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.','Las salidas aleatorias se consolidan en una fila por cliente con columnas codAbfActual1..N; codCnActual permanece unico.','La carpeta 02_inputs_xml_flat contiene todos los XMLs juntos como enlaces duros hacia los XMLs por ruta para evitar duplicar espacio.','Alinea General post primera asignacion: ABF asignado en baja para D06, asesor asignado para D25, baja temporal D16/D34 y CN de cosecha por region/ruta.']}
     for path, data in [
         (BASE/'04_validation'/'generation_summary.json', summary),
         (BASE/'04_validation'/'domain_validation_summary.json', domain_summary),

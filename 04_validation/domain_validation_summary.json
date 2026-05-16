@@ -1,104 +1,114 @@
 {
   "domain_validation_failed_sampled_cases": 0,
-  "sampled_case_count_for_domain_validation": 72,
+  "sampled_case_count_for_domain_validation": 271,
   "domain_failure_samples": [],
   "domain_values_observed": {
     "creditoEstado": {
-      "C": 108,
-      "D": 28
+      "C": 184,
+      "D": 253
     },
     "creditoBanca": {
-      "banca_personas": 136
-    },
-    "creditoTipoCliente": {
-      "CR": 108,
-      "CE": 28
-    },
-    "creditoRegion": {
-      "Nor_oriente": 112,
-      "Metropolitana": 24
-    },
-    "participanteLaborEstado": {
-      "Alta": 136
-    },
-    "participanteLaborBanca": {
-      "banca_personas": 135,
+      "banca_personas": 436,
       "banca_trabajadores": 1
     },
+    "creditoTipoCliente": {
+      "CR": 184,
+      "CE": 253
+    },
+    "creditoRegion": {
+      "Nor_oriente": 230,
+      "Metropolitana": 207
+    },
+    "participanteLaborEstado": {
+      "Alta": 434,
+      "Baja": 3
+    },
+    "participanteLaborBanca": {
+      "banca_personas": 434,
+      "banca_trabajadores": 3
+    },
     "participanteLaborRegion": {
-      "Nor_oriente": 112,
-      "Metropolitana": 24
+      "Nor_oriente": 229,
+      "Metropolitana": 205,
+      "Sur_occidente": 3
     },
     "participanteLaborVacacion": {
-      "0": 136
+      "0": 437
     },
     "participanteLaborTipo": {
-      "abf": 126,
-      "cp": 10
+      "abf": 329,
+      "cn": 12,
+      "cp": 96
     },
     "clienteRegion": {
-      "Nor_oriente": 59,
-      "Metropolitana": 13
+      "Nor_oriente": 149,
+      "Metropolitana": 123
     },
     "clienteEsSugerido": {
-      "No": 72
+      "No": 269,
+      "Si": 3
     },
     "clienteEstabaAsignadoAbf": {
-      "No": 58,
-      "Si": 14
+      "No": 129,
+      "Si": 143
     },
     "clienteFueDesembolsadoEnElUltimoMes": {
-      "No": 60,
-      "Si": 12
+      "No": 147,
+      "Si": 125
     },
     "cnEstado": {
-      "Alta": 7344,
-      "Baja": 72
+      "Alta": 27744,
+      "Baja": 272
     },
     "cnRegion": {
-      "Nor_oriente": 3672,
-      "Metropolitana": 3672,
-      "Sur_occidente": 72
+      "Nor_oriente": 13872,
+      "Metropolitana": 13872,
+      "Sur_occidente": 272
     },
     "asignadoEstado": {
-      "Alta": 21816,
-      "Baja": 7848
+      "Alta": 82416,
+      "Baja": 29648
     },
     "asignadoEnVacacion": {
-      "0": 29592,
-      "1": 72
+      "0": 111792,
+      "1": 272
     },
     "asignadoBanca": {
-      "banca_personas": 28944,
-      "banca_trabajadores": 720
+      "banca_personas": 109344,
+      "banca_trabajadores": 2720
     },
     "asignadoBolsonEstado": {
-      "Equilibrio": 15552,
-      "Exceso": 5400,
-      "Deficit": 8712
+      "Equilibrio": 58752,
+      "Exceso": 20400,
+      "Deficit": 32912
     },
     "abfSugeridoEstado": {
-      "": 72
+      "": 269,
+      "Alta": 3
     },
     "abfSugeridoBanca": {
-      "": 72
+      "": 269,
+      "banca_personas": 3
     },
     "abfSugeridoRegion": {
-      "": 72
+      "": 269,
+      "Nor_oriente": 3
     },
     "abfSugeridoOportunidad": {
-      "": 72
+      "": 269,
+      "Sugerido": 3
     },
     "esTrabajadorInterno": {
-      "N": 72
+      "N": 272
     },
     "cnCosechaEstado": {
-      "Alta": 134,
-      "Baja": 2
+      "Alta": 421,
+      "Baja": 16
     },
     "cnCosechaRegion": {
-      "Nor_oriente": 113,
-      "Metropolitana": 23
+      "Nor_oriente": 237,
+      "Sur_occidente": 2,
+      "Metropolitana": 198
     }
   },
   "domain_rules": {

@@ -1,6 +1,6 @@
 {
-  "patrono_cases_generated": 22200,
-  "patrono_cases_passed_validation": 22200,
+  "patrono_cases_generated": 222000,
+  "patrono_cases_passed_validation": 222000,
   "patrono_validation_failed_cases": 0,
   "patrono_validation_pass_rate": 1.0,
   "route_patrono_failures": {}

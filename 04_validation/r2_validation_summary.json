@@ -1,6 +1,6 @@
 {
-  "r2_cases_generated": 14400,
-  "r2_cases_passed_validation": 14400,
+  "r2_cases_generated": 144000,
+  "r2_cases_passed_validation": 144000,
   "r2_validation_failed_cases": 0,
   "r2_validation_pass_rate": 1.0,
   "route_r2_failures": {}

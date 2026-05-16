@@ -27,6 +27,8 @@ SCENARIOS = BASE / 'scenario_constraints_arbol_expandido_general_post_primera_as
 OUT_ROOT = BASE / 'qa_inputs_arbol_expandido_general_post_full_bt'
 RUN_VERSION = 'XML_INPUT_GENERATOR_V1_2026_05_13'
 RUN_DATE = '2026-05-13'
+FLAT_XML_DIR = '02_inputs_xml_flat'
+MAX_EXPECTED_ABF_SLOTS = 4
 
 # CNs sintéticos. Se mantienen en todos los XML para cumplir el criterio de incluir el catálogo completo.
 CN_CODES = {
@@ -662,6 +664,37 @@ def build_expected(ctx: dict) -> dict:
     return expected
 
 
+def abf_slot_fields(max_slots: int = MAX_EXPECTED_ABF_SLOTS) -> list[str]:
+    return [f'codAbfActual{i}' for i in range(1, max_slots + 1)]
+
+
+def expected_row_for_csv(expected: dict, max_slots: int = MAX_EXPECTED_ABF_SLOTS) -> dict:
+    row = dict(expected)
+    values = []
+    if expected.get('accepted_cod_abf_set'):
+        values = [x for x in expected.get('accepted_cod_abf_set', '').split('|') if x]
+        row['expected_mode'] = 'ACCEPTED_SET'
+    elif expected.get('codAbfActual'):
+        values = [expected.get('codAbfActual')]
+        if expected.get('codCnActual'):
+            row['expected_mode'] = 'EXACT'
+    for field in abf_slot_fields(max_slots):
+        row[field] = ''
+    for idx, value in enumerate(values[:max_slots], start=1):
+        row[f'codAbfActual{idx}'] = value
+    return row
+
+
+def ensure_hardlink(src: Path, dst: Path) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        dst.unlink()
+    try:
+        os.link(src, dst)
+    except OSError:
+        shutil.copy2(src, dst)
+
+
 def build_xml(ctx: dict, cns: list[dict], creditos: list[dict]) -> str:
     assigned_abf_code = ctx['current_abf'] if ctx['assigned_yes'] else '-1'
     current_cn = CN_CODES['ASIGNADO'] if ctx['assigned_yes'] else (CN_CODES['COSECHA'] if ctx['general_decisions'].get('D22') == 'SI' else '-1')
@@ -762,6 +795,7 @@ def prepare_output_root() -> None:
     (OUT_ROOT / '00_catalogos').mkdir(parents=True)
     (OUT_ROOT / '01_manifest').mkdir(parents=True)
     (OUT_ROOT / '02_inputs_xml').mkdir(parents=True)
+    (OUT_ROOT / FLAT_XML_DIR).mkdir(parents=True)
     (OUT_ROOT / '03_expected').mkdir(parents=True)
     (OUT_ROOT / '04_validation').mkdir(parents=True)
     (OUT_ROOT / '05_scripts').mkdir(parents=True)
@@ -787,8 +821,8 @@ def main(limit: int | None = None) -> None:
     write_readme()
 
     expected_fields = ['case_id', 'expanded_route_id', 'general_route_id', 'included_in_core', 'expected_mode', 'final_output_class_id',
-                       'codCliente', 'dpiCliente', 'codCnActual', 'codAbfActual', 'codCnAnterior', 'codAbfAnterior', 'bolson',
-                       'accepted_cod_cn_set', 'accepted_cod_abf_set', 'expected_control_tree', 'expected_description']
+                       'codCliente', 'dpiCliente', 'codCnActual', *abf_slot_fields(), 'codCnAnterior', 'codAbfAnterior', 'bolson',
+                       'expected_control_tree', 'expected_description']
     validation_fields = ['case_id', 'expanded_route_id', 'general_route_id', 'final_output_class_id', 'input_xml_path',
                          'xml_generated', 'expected_generated', 'bt_control_case', 'bt_credito_banca_ok', 'bt_expected_tree_ok',
                          'all_cn_catalog_present', 'notes']
@@ -827,8 +861,10 @@ def main(limit: int | None = None) -> None:
             out_path = OUT_ROOT / rel_path
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(xml, encoding='utf-8')
+            ensure_hardlink(out_path, OUT_ROOT / FLAT_XML_DIR / f"{ctx['case_id']}.xml")
 
-            exp_writer.writerow({k: expected.get(k, '') for k in expected_fields})
+            expected_row = expected_row_for_csv(expected)
+            exp_writer.writerow({k: expected_row.get(k, '') for k in expected_fields})
             is_bt = ctx['final_output_class_id'] == 'CONTROL_BT'
             bt_credito_banca_ok = ''
             bt_expected_tree_ok = ''

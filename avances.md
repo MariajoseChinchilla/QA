@@ -200,3 +200,44 @@
 
 ### Proximo paso sugerido
 - Mantener pendiente solo la decision de negocio sobre normalizar los modos no canonicos de expected/random.
+
+## [2026-05-15 16:30] Avance: Regeneracion QA1000 y carpeta plana
+
+### Que se hizo
+- Se aumento la generacion a 1000 casos por ruta para General post primera asignacion.
+- Se creo `02_inputs_xml_flat/` con todos los XMLs juntos, manteniendo `02_inputs_xml/` separado por regla/ruta.
+- Se reemplazo la salida aleatoria por columnas `codAbfActual1..codAbfActual4`, donde 4 es el maximo de ABFs por CN en el catalogo simulado.
+- Se dejo `codCnActual` como una sola columna.
+- Se garantizo unicidad de `codCliente` y `dpiCliente` con `global_case_number`.
+
+### Resultado
+- Total generado: 222,000 XMLs.
+- Rutas: 222.
+- Casos por ruta: 1000.
+- Carpeta plana: 222,000 XMLs.
+- Expected outputs: 222,000 filas.
+- Casos aleatorios: 98,000 filas, una por cliente.
+- `random_candidates.csv`: 98,000 filas, una por cliente, ya no una por opcion.
+
+### Validacion posterior
+- Compilacion de scripts: PASS.
+- Estructura del repo: PASS.
+- Manifest: PASS.
+- Validacion muestral integral `--limit 10000`: PASS, 0 issues.
+- Unicidad completa: 0 duplicados en `codCliente` y 0 duplicados en `dpiCliente`.
+- Pares esperados CN/ABF contra catalogo: 345,000 revisados, 0 errores.
+- Muestra transversal por todas las rutas: 666 XMLs, 0 errores.
+- `GPA-012__DIRECT`: 1000/1000 casos con `participanteLaborRegion` igual a `clienteRegion`.
+
+### Archivos involucrados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/generate_full_qa_xml_inputs.py`
+- `05_scripts/qa_validation_lib.py`
+- `01_manifest/case_manifest_1000_full_v6.csv`
+- `02_inputs_xml/`
+- `02_inputs_xml_flat/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/`
+
+### Nota operativa
+- Se activo compresion NTFS para las carpetas generadas y se usaron enlaces duros en la carpeta plana para evitar duplicar el peso de los XMLs.

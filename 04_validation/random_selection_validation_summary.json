@@ -1,6 +1,7 @@
 {
-  "random_cases_generated": 9800,
-  "random_candidate_rows_generated": 22300,
+  "random_cases_generated": 98000,
+  "random_candidate_rows_generated": 98000,
   "random_routes": 98,
-  "expected_correct_count_per_random_route": 100
+  "expected_correct_count_per_random_route": 1000,
+  "random_candidate_layout": "una fila por cliente con codAbfActual1..N"
 }

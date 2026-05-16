@@ -55,6 +55,51 @@
 ### Estado
 - CORREGIDO
 
+## [2026-05-15 16:30] Arreglo: QA1000, carpeta plana y salidas aleatorias anchas
+
+### Error detectado
+- El paquete seguia generando 100 casos por ruta y no existia una carpeta unica con todos los XMLs juntos.
+- Los casos de seleccion aleatoria estaban representados como una fila por opcion posible en `random_candidates.csv`, lo que multiplicaba registros por cliente.
+- `expected_outputs.csv` usaba una sola columna `codAbfActual`, insuficiente para expresar todas las opciones validas de un caso aleatorio.
+- La generacion previa podia reutilizar codigos de cliente/DPI derivados del seed; se requeria garantizar un unico registro por cliente.
+
+### Causa probable
+- El generador dependia del manifest historico de 100 casos por ruta y de la convencion antigua `accepted_cod_abf_set` / `random_candidates` por candidato.
+
+### Cambio aplicado
+- `generate_inputs_100_v6.py` ahora construye un manifest reproducible de 1000 casos por ruta (`222,000` casos en total).
+- Se agrego `02_inputs_xml_flat/` con todos los XMLs juntos; los archivos se crean como enlaces duros hacia `02_inputs_xml/` para no duplicar almacenamiento.
+- `expected_outputs.csv`, `random_case_id.csv` y `random_candidates.csv` usan `codAbfActual1..codAbfActual4`; `codCnActual` permanece como columna unica.
+- Los casos aleatorios quedan en una sola fila por cliente, con todas las opciones ABF en columnas.
+- Los casos deterministicos usan solo `codAbfActual1`.
+- `codCliente` y `dpiCliente` se derivan de `global_case_number`, garantizando unicidad en los 222,000 clientes.
+- Se actualizo `qa_validation_lib.py` para validar 1000 casos por ruta, carpeta plana, columnas anchas y unicidad de cliente/DPI.
+- El generador historico `generate_full_qa_xml_inputs.py` quedo alineado con el formato ancho de expected y carpeta plana.
+
+### Archivos modificados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/generate_full_qa_xml_inputs.py`
+- `05_scripts/qa_validation_lib.py`
+- `01_manifest/case_manifest_1000_full_v6.csv`
+- `02_inputs_xml/`
+- `02_inputs_xml_flat/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\generate_full_qa_xml_inputs.py .\05_scripts\qa_validation_lib.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`: 222,000 XMLs generados, 222 rutas, 1000 casos por ruta.
+- `python .\05_scripts\validate_repo_structure.py`: PASS, 222,000 XMLs por ruta y 222,000 XMLs en carpeta plana.
+- `python .\05_scripts\validate_manifest.py`: PASS.
+- `python .\05_scripts\run_all_validations.py --limit 10000`: PASS, 0 issues.
+- Control completo de CSV: 222,000 expected, 0 duplicados en `codCliente`, 0 duplicados en `dpiCliente`, 98,000 casos aleatorios y 98,000 filas en `random_candidates.csv`.
+- Verificacion de pares esperados: 345,000 pares CN/ABF revisados contra catalogo, 0 errores.
+- Muestra transversal: 666 XMLs (casos 1, 500 y 1000 de cada ruta), 0 errores de parseo o mismatch cliente/DPI.
+- Focal `GPA-012__DIRECT`: 1000 XMLs revisados, 0 errores de region entre cliente y labor.
+
+### Estado
+- CORREGIDO
+
 ## [2026-05-15 12:12] Arreglo: Alineacion de General post primera asignacion contra arbol completo
 
 ### Error detectado
