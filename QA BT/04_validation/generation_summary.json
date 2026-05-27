@@ -1,7 +1,7 @@
 {
   "artifact": "QA BT",
-  "generated_at_utc": "2026-05-27T18:40:02.078304Z",
-  "generator_version": "XML_INPUT_GENERATOR_BT_FLAT_V1_2026_05_27",
+  "generated_at_utc": "2026-05-27T19:36:17.655310Z",
+  "generator_version": "XML_INPUT_GENERATOR_BT_FLAT_V2_2026_05_27",
   "tree_version": "MOTOR_BT_DRAWIO_EXPANDED_V1",
   "cases_per_route": 100,
   "expanded_routes_generated": 82,
@@ -20,10 +20,10 @@
     "PED": 200
   },
   "random_cases_generated": 3600,
-  "static_cn_catalog_count": 7,
-  "static_abf_total": 20,
-  "activo_financiero_static_hash": "cdfd08ebb8d42d1c27d8ffb606e38ce547a8596895f753b84af81bad2eaa4ec3",
-  "duration_seconds": 11.21,
+  "static_cn_catalog_count": 10,
+  "static_abf_total": 26,
+  "activo_financiero_static_hash": "c36fc6608620d66dd1ef23dd756c4a7e15eb6d4a560d4d49f51236d44b04f1d9",
+  "duration_seconds": 43.18,
   "notes": [
     "Todos los XML de entrada se escriben únicamente en 02_inputs_xml_flat.",
     "No se crea 02_inputs_xml ni carpetas por regla/ruta.",

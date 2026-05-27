@@ -12,15 +12,23 @@ Contenido principal:
 Resumen de la version actual:
 - Fuente del arbol: 00_catalogos/Motor_BT.drawio.xml.
 - Extractor: extract_bt_routes_from_drawio.py.
-- Generador: XML_INPUT_GENERATOR_BT_FLAT_V1_2026_05_27.
+- Generador: XML_INPUT_GENERATOR_BT_FLAT_V2_2026_05_27.
 - Rutas expandidas: 82.
 - Casos por ruta: 100.
 - XMLs totales: 8,200.
 - XMLs en carpeta plana: 8,200.
+- Tipos esperados: CE=1,400, CR=4,800, CN=2,000.
 
 Nota de estructura:
 - Esta variante BT no crea 02_inputs_xml ni subcarpetas por regla/ruta.
 - La unica carpeta de entradas es 02_inputs_xml_flat.
+
+Restricciones BT aplicadas:
+- Cliente existente => tipo CE y al menos un credito en estado D.
+- Cliente reactivado => tipo CR y sin credito en estado D.
+- Cliente nuevo/no reactivado => tipo CN y sin credito en estado D.
+- Todas las regiones de CN, cosecha y participante labor son Metropolitana.
+- Cada municipio conocido del cliente tiene al menos un CN en ActivoFinanciero.
 
 Validacion ejecutada:
 - Extraccion del draw.io: PASS.
@@ -29,3 +37,4 @@ Validacion ejecutada:
 - Manifest vs expected vs XMLs: PASS.
 - XML well-formed: PASS.
 - Validacion de banca de credito BT/PED: PASS.
+- Validacion de fidelidad de ruta BT: PASS.

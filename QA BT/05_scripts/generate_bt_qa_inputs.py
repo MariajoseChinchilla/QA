@@ -11,6 +11,7 @@ import os
 import random
 import re
 import time
+import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,7 +26,7 @@ EXPECTED = BASE / "03_expected" / "expected_outputs.csv"
 FLAT_DIR = BASE / "02_inputs_xml_flat"
 VALIDATION_DIR = BASE / "04_validation"
 CASES_PER_ROUTE = int(os.getenv("QA_BT_CASES_PER_ROUTE", "100"))
-RUN_VERSION = "XML_INPUT_GENERATOR_BT_FLAT_V1_2026_05_27"
+RUN_VERSION = "XML_INPUT_GENERATOR_BT_FLAT_V2_2026_05_27"
 TREE_VERSION = "MOTOR_BT_DRAWIO_EXPANDED_V1"
 MAPPING_VERSION = "BT_FLAT_V1"
 
@@ -120,6 +121,36 @@ def build_static_catalog() -> list[dict[str, object]]:
                 abf("700101", "Alta", BANCA_BT, 34, "Equilibrio", True),
                 abf("700102", "Alta", BANCA_BP, 34, "Equilibrio"),
                 abf("700103", "Baja", BANCA_BT, 34, "Equilibrio", True),
+            ],
+        ),
+        cn(
+            "2001",
+            "Agencia Municipio Vivienda BT",
+            "municipio_vivienda_bt",
+            "departamento_vivienda_bt",
+            [
+                abf("200101", "Alta", BANCA_BT, 35, "Equilibrio", True),
+                abf("200102", "Alta", BANCA_BT, 42, "Deficit", True),
+            ],
+        ),
+        cn(
+            "2002",
+            "Agencia Municipio Trabajo BT",
+            "municipio_trabajo_bt",
+            "departamento_trabajo_bt",
+            [
+                abf("200201", "Alta", BANCA_BT, 35, "Equilibrio", True),
+                abf("200202", "Alta", BANCA_BT, 42, "Deficit", True),
+            ],
+        ),
+        cn(
+            "2003",
+            "Agencia Historial Alterno BT",
+            "municipio_historial_otro_bt",
+            "departamento_historial_otro_bt",
+            [
+                abf("200301", "Alta", BANCA_BT, 36, "Equilibrio", True),
+                abf("200302", "Alta", BANCA_BP, 37, "Equilibrio"),
             ],
         ),
         cn(
@@ -262,26 +293,37 @@ def credito_xml(credito: dict[str, object]) -> str:
     return "<Credito>" + "".join(tag(field, credito.get(field, "")) for field in fields) + "</Credito>"
 
 
-def base_credit(case_id: str, seq: int, banca: str, target_cn: dict[str, object], labor_abf: str) -> dict[str, object]:
+def base_credit(
+    case_id: str,
+    seq: int,
+    banca: str,
+    target_cn: dict[str, object],
+    labor_abf: str,
+    tipo_cliente: str,
+    estado: str = "C",
+    labor_banca: str | None = None,
+    labor_estado: str = "Alta",
+) -> dict[str, object]:
+    labor_banca = labor_banca or banca
     return {
         "creditoNo": f"BT{seq:02d}{case_id[-4:]}",
         "creditoMonto": "25000.00",
         "creditoTasa": "17.5",
         "creditoTipo": "Nuevo",
-        "creditoEstado": "C",
+        "creditoEstado": estado,
         "creditoPatronoNombre": "patrono1",
         "creditoPatronoCod": "P001",
         "creditoBanca": banca,
-        "creditoTipoCliente": "CR",
+        "creditoTipoCliente": tipo_cliente,
         "creditoRegion": REGION,
         "creditoFechaConsecion": "2026-04-15",
         "creditoFechaCancelacion": "2028-04-15",
         "creditoPatrono": "patrono1",
         "participanteLaborCod": labor_abf,
-        "participanteLaborEstado": "Alta",
+        "participanteLaborEstado": labor_estado,
         "participanteLaborEdad": "35",
         "participanteLaborCn": target_cn["cod"],
-        "participanteLaborBanca": banca,
+        "participanteLaborBanca": labor_banca,
         "participanteLaborRegion": target_cn["region"],
         "participanteLaborMunicipio": target_cn["municipio"],
         "participanteLaborVacacion": "0",
@@ -293,6 +335,27 @@ def base_credit(case_id: str, seq: int, banca: str, target_cn: dict[str, object]
         "cnCosechaDepartamento": target_cn["departamento"],
         "cnCosechaMunicipio": target_cn["municipio"],
     }
+
+
+def has_decision(text: str, question_fragment: str, answer: str) -> bool:
+    return f"{question_fragment} = {answer}" in text
+
+
+def force_tipo_cliente(text: str, expected_tree: str) -> str:
+    if expected_tree == "PED":
+        return "CN"
+    if has_decision(text, "Es cliente existente?", "Sí"):
+        return "CE"
+    if has_decision(text, "reactivado?", "Sí"):
+        return "CR"
+    return "CN"
+
+
+def normalize_for_rules(value: str) -> str:
+    no_marks = "".join(
+        char for char in unicodedata.normalize("NFKD", value) if not unicodedata.combining(char)
+    )
+    return no_marks.lower()
 
 
 def scenario(route: dict[str, str], case_number: int, global_number: int, cns_by_code: dict[str, dict[str, object]]) -> dict[str, object]:
@@ -438,6 +501,194 @@ def scenario(route: dict[str, str], case_number: int, global_number: int, cns_by
     }
 
 
+def scenario_v2(route: dict[str, str], case_number: int, global_number: int, cns_by_code: dict[str, dict[str, object]]) -> dict[str, object]:
+    expanded_id = route["expanded_route_id"]
+    class_id = route["final_output_class_id"]
+    text = " > ".join([route.get("base_decision_path_text", ""), route.get("subroute_path", "")])
+    norm = normalize_for_rules(text)
+    route_r1 = r1_id(expanded_id)
+    seed = int(hashlib.sha256(f"{expanded_id}:{case_number}".encode("utf-8")).hexdigest()[:12], 16)
+    rng = random.Random(seed)
+
+    target_cn_code = "1001"
+    expected_abfs = ["500001"]
+    mode = route["expected_mode"]
+    expected_desc = route["final_expected_output"]
+    bolson = ""
+    expected_tree = "BT"
+
+    if route_r1:
+        target_cn_code, expected_abfs, r1_mode = R1_TARGETS[route_r1]
+        if mode == "EXACT" and r1_mode == "ACCEPTED_SET":
+            mode = "ACCEPTED_SET_OR_DETERMINISTIC_SINGLETON"
+    elif "DIRECT_PED" in class_id:
+        expected_tree = "PED"
+        expected_abfs = [""]
+        target_cn_code = ""
+    elif "PENDING_BOLSON" in class_id:
+        target_cn_code = "9001"
+        expected_abfs = [""]
+        bolson = "PENDIENTES"
+    elif "MORA_BOLSONES" in class_id:
+        target_cn_code = "1001"
+        expected_abfs = ["500001"]
+        bolson = "LISTA_SEGUIMIENTO|CONTAGIO|CCR|BUCKET_2|EMPLEADO_BANTRAB"
+    elif (
+        "REASSIGN_DISBURSER" in class_id
+        or "ASSIGN_LAST_ABF" in class_id
+        or ("ASIGNAR_EL_CLIENTE_A_DICHO_ABF" in class_id and "ultimo abf" in norm)
+    ):
+        target_cn_code = "7001"
+        expected_abfs = ["700101"]
+
+    target_cn = cns_by_code.get(target_cn_code) if target_cn_code else None
+    if target_cn is None:
+        target_cn = cns_by_code["1001"]
+
+    is_bt = "es cliente bt? = no" not in norm
+    is_existing = "es cliente existente? = si" in norm
+    is_reactivated = "reactivado? = si" in norm
+    tipo_cliente = "CN" if expected_tree == "PED" else ("CE" if is_existing else ("CR" if is_reactivated else "CN"))
+    credito_banca = BANCA_BT if is_bt else BANCA_BP
+
+    cliente_vivienda = str(cns_by_code["2001"]["municipio"])
+    cliente_trabajo = str(cns_by_code["2002"]["municipio"])
+    scope_norm = normalize_for_rules(route.get("candidate_scope", ""))
+    if route_r1:
+        if "municipio de trabajo" in scope_norm:
+            cliente_trabajo = str(target_cn["municipio"])
+            if "se conoce el municipio de vivienda? = no" in norm:
+                cliente_vivienda = "SIN_MUNICIPIO"
+        elif "municipio de vivienda" in scope_norm:
+            cliente_vivienda = str(target_cn["municipio"])
+            if "se conoce el municipio de trabajo? = no" in norm:
+                cliente_trabajo = "SIN_MUNICIPIO"
+    if "se conoce el municipio de vivienda? = no" in norm and "municipio de trabajo" in scope_norm:
+        cliente_vivienda = "SIN_MUNICIPIO"
+    if "se conoce el municipio de vivienda o trabajo? = no" in norm:
+        cliente_vivienda = "SIN_MUNICIPIO"
+        cliente_trabajo = "SIN_MUNICIPIO"
+
+    assigned = "Sí" if "el cliente esta asignado a un abf de alta? = si" in norm else "No"
+    cliente_es_sugerido = "Si" if "sugerido mensual? = si" in norm else "No"
+    es_trabajador_interno = "S" if "lista de seguimiento" in norm or "empleado bantrab" in norm else "N"
+
+    abf_sugerido = {
+        "abfSugeridoCod": "500001" if assigned == "Sí" else "",
+        "abfSugeridoEstado": "Alta" if assigned == "Sí" else "",
+        "abfSugeridoEdad": "38" if assigned == "Sí" else "",
+        "abfSugeridoCnCod": "1001" if assigned == "Sí" else "",
+        "abfSugeridoBanca": BANCA_BT if assigned == "Sí" else "",
+        "abfSugeridoRegion": REGION if assigned == "Sí" else "",
+        "abfSugeridoMunicipio": "municipio_asignacion_bt" if assigned == "Sí" else "",
+        "abfSugeridoOportunidad": "Sugerido" if cliente_es_sugerido == "Si" else ("No_Sugerido" if assigned == "Sí" else ""),
+    }
+
+    labor_abf = expected_abfs[0] if expected_abfs and expected_abfs[0] else "700101"
+    creditos: list[dict[str, object]] = []
+    seq = 1
+
+    if expected_tree == "PED":
+        creditos.append(base_credit(expanded_id, seq, BANCA_BP, cns_by_code["2001"], "200101", tipo_cliente, "C"))
+        seq += 1
+    elif is_existing:
+        active_cn = cns_by_code["1001"] if assigned == "Sí" else cns_by_code["2001"]
+        active_abf = "500001" if assigned == "Sí" else "200101"
+        creditos.append(base_credit(expanded_id, seq, credito_banca, active_cn, active_abf, tipo_cliente, "D"))
+        seq += 1
+    elif is_reactivated:
+        outside = base_credit(expanded_id, seq, credito_banca, cns_by_code["2003"], "200301", tipo_cliente, "C")
+        outside["creditoFechaConsecion"] = "2025-11-15"
+        outside["creditoFechaCancelacion"] = "2026-02-15"
+        creditos.append(outside)
+        seq += 1
+    else:
+        neutral = base_credit(expanded_id, seq, credito_banca, cns_by_code["2003"], "200301", tipo_cliente, "C")
+        neutral["creditoFechaConsecion"] = "2026-01-10"
+        neutral["creditoFechaCancelacion"] = "2026-04-10"
+        creditos.append(neutral)
+        seq += 1
+
+    last_period_yes = "ultimo periodo" in norm and "cosecho un credito? = si" in norm
+    last_abf_yes = "ultimo abf que le desembolso un credito sigue de alta? = si" in norm
+    last_abf_no = "ultimo abf que le desembolso un credito sigue de alta? = no" in norm
+    cliente_ultimo_mes = "Si" if last_period_yes or last_abf_yes or last_abf_no else "No"
+
+    if last_period_yes or last_abf_yes:
+        hist_abf = "700102" if "el abf y el cliente son de la misma banca? = no" in norm else "700101"
+        history = base_credit(
+            expanded_id,
+            seq,
+            credito_banca,
+            cns_by_code["7001"],
+            hist_abf,
+            tipo_cliente,
+            "C",
+            labor_banca=BANCA_BP if hist_abf == "700102" else BANCA_BT,
+        )
+        history["creditoFechaConsecion"] = "2026-05-02"
+        history["creditoFechaCancelacion"] = "2028-05-02"
+        creditos.append(history)
+        seq += 1
+    elif last_abf_no:
+        history = base_credit(
+            expanded_id,
+            seq,
+            credito_banca,
+            cns_by_code["7001"],
+            "700103",
+            tipo_cliente,
+            "C",
+            labor_banca=BANCA_BT,
+            labor_estado="Baja",
+        )
+        history["creditoFechaConsecion"] = "2026-05-02"
+        history["creditoFechaCancelacion"] = "2028-05-02"
+        creditos.append(history)
+        seq += 1
+
+    needs_viv_history = "municipio de vivienda" in scope_norm and "con historial de desembolso" in scope_norm
+    needs_work_history = "municipio de trabajo" in scope_norm and "con historial de desembolso" in scope_norm
+    if needs_viv_history or needs_work_history:
+        history = base_credit(expanded_id, seq, credito_banca, target_cn, labor_abf, tipo_cliente, "C")
+        history["creditoFechaConsecion"] = "2025-12-10"
+        history["creditoFechaCancelacion"] = "2026-03-10"
+        creditos.append(history)
+        seq += 1
+
+    if "lista de seguimiento" in norm and not any(credito.get("creditoEstado") == "D" for credito in creditos):
+        creditos.append(base_credit(expanded_id, seq, credito_banca, cns_by_code["1001"], "500001", tipo_cliente, "D"))
+
+    return {
+        "case_id": f"{expanded_id}__{case_number:04d}",
+        "seed": seed,
+        "codCliente": str(80000000 + global_number),
+        "dpiCliente": str(4000000000000 + global_number),
+        "clienteEdad": str(35 + rng.randint(0, 3)),
+        "clienteRegion": REGION,
+        "clienteMunicipioVivienda": cliente_vivienda,
+        "clienteMunicipioTrabajo": cliente_trabajo,
+        "clienteEsSugerido": cliente_es_sugerido,
+        "clienteEstabaAsignadoAbf": assigned,
+        "clienteEsCarteraDelCnCod": "1001" if assigned == "Sí" else "-1",
+        "clienteFueDesembolsadoEnElUltimoMes": cliente_ultimo_mes,
+        "clienteEsCarteraDelAbfCod": "500001" if assigned == "Sí" else "-1",
+        "esTrabajadorInterno": es_trabajador_interno,
+        **abf_sugerido,
+        "creditos": creditos,
+        "codCnActual": target_cn_code,
+        "codAbfsActuales": expected_abfs[:MAX_ABF_SLOTS],
+        "codCnAnterior": "1001" if assigned == "Sí" else "-1",
+        "codAbfAnterior": "500001" if assigned == "Sí" else "-1",
+        "bolson": bolson,
+        "expected_control_tree": expected_tree,
+        "expected_mode": mode,
+        "expected_description": expected_desc,
+        "is_random_selection": "Si" if is_random_route(route) else "No",
+        "tipo_cliente_expected": tipo_cliente,
+    }
+
+
 def build_xml(ctx: dict[str, object], static_activo_financiero: str) -> str:
     solicitud_fields = [
         "clienteNombre",
@@ -466,7 +717,6 @@ def build_xml(ctx: dict[str, object], static_activo_financiero: str) -> str:
     data["clienteNombre"] = f"Cliente QA BT {ctx['case_id']}"
     data["clienteCod"] = ctx["codCliente"]
     data["clienteDpi"] = ctx["dpiCliente"]
-    data["clienteFueDesembolsadoEnElUltimoMes"] = "Si" if len(ctx["creditos"]) > 1 else "No"  # type: ignore[arg-type]
     xml = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
@@ -589,7 +839,7 @@ def main() -> int:
     for route in catalog:
         for case_number in range(1, CASES_PER_ROUTE + 1):
             global_number += 1
-            ctx = scenario(route, case_number, global_number, cns_by_code)
+            ctx = scenario_v2(route, case_number, global_number, cns_by_code)
             case_id = str(ctx["case_id"])
             xml_name = f"{case_id}.xml"
             rel_xml = f"02_inputs_xml_flat/{xml_name}"

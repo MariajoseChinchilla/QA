@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the flat QA BT package."""
+"""Validate the flat QA BT package and route-forcing constraints."""
 
 from __future__ import annotations
 
@@ -51,6 +51,14 @@ def text_values(root: ET.Element, tag: str) -> set[str]:
         for elem in root.iter()
         if elem.tag.split("}", 1)[-1] == tag
     }
+
+
+def text_list(root: ET.Element, tag: str) -> list[str]:
+    return [
+        (elem.text or "").strip()
+        for elem in root.iter()
+        if elem.tag.split("}", 1)[-1] == tag
+    ]
 
 
 def first_text(root: ET.Element, tag: str) -> str:
@@ -174,16 +182,52 @@ def validate_xmls(manifest_rows: list[dict[str, str]], expected_rows: list[dict[
         )
 
         credito_bancas = text_values(root, "creditoBanca")
+        credito_estados = text_values(root, "creditoEstado")
+        credito_tipos = text_values(root, "creditoTipoCliente")
+        credito_region_values = text_values(root, "creditoRegion")
+        participante_region_values = text_values(root, "participanteLaborRegion")
+        cosecha_region_values = text_values(root, "cnCosechaRegion")
+        cn_region_values = text_values(root, "cnRegion")
+        cn_municipios = text_values(root, "cnMunicipio")
+        cliente_municipios = []
+        for field in ["clienteMunicipioVivienda", "clienteMunicipioTrabajo"]:
+            value = first_text(root, field)
+            if value and value != "SIN_MUNICIPIO":
+                cliente_municipios.append(value)
         expected_tree = expected.get("expected_control_tree", "")
+        expected_tipo = expected.get("tipo_cliente_expected", "")
+        messages: list[str] = []
         if expected_tree == "BT":
             bt_status = "PASS" if credito_bancas == {"banca_trabajadores"} else "FAIL"
-            msg = "Créditos de entrada en banca_trabajadores." if bt_status == "PASS" else "Créditos BT con banca distinta."
+            if bt_status != "PASS":
+                messages.append("Creditos BT con banca distinta.")
         elif expected_tree == "PED":
             bt_status = "PASS" if credito_bancas == {"banca_personas"} else "FAIL"
-            msg = "Ruta de control PED conserva banca_personas." if bt_status == "PASS" else "Ruta PED con banca inesperada."
+            if bt_status != "PASS":
+                messages.append("Ruta PED con banca inesperada.")
         else:
             bt_status = "FAIL"
-            msg = "expected_control_tree inválido."
+            messages.append("expected_control_tree invalido.")
+
+        region_values = credito_region_values | participante_region_values | cosecha_region_values | cn_region_values
+        if region_values != {"Metropolitana"}:
+            bt_status = "FAIL"
+            messages.append(f"Region distinta a Metropolitana: {'|'.join(sorted(region_values))}.")
+        if expected_tipo and credito_tipos and credito_tipos != {expected_tipo}:
+            bt_status = "FAIL"
+            messages.append("creditoTipoCliente no coincide con expected.")
+        if expected_tipo == "CE" and "D" not in credito_estados:
+            bt_status = "FAIL"
+            messages.append("Cliente existente CE sin credito en estado D.")
+        if expected_tipo in {"CR", "CN"} and "D" in credito_estados:
+            bt_status = "FAIL"
+            messages.append("Cliente no existente no debe traer credito en estado D.")
+        missing_municipios = sorted(m for m in cliente_municipios if m not in cn_municipios)
+        if missing_municipios:
+            bt_status = "FAIL"
+            messages.append(f"Municipios de cliente sin CN: {'|'.join(missing_municipios)}.")
+        if not messages:
+            messages.append("OK")
 
         bt_rows.append(
             {
@@ -192,11 +236,15 @@ def validate_xmls(manifest_rows: list[dict[str, str]], expected_rows: list[dict[
                 "input_xml_path": rel,
                 "expected_control_tree": expected_tree,
                 "credito_banca_values": "|".join(sorted(credito_bancas)),
+                "credito_estado_values": "|".join(sorted(credito_estados)),
+                "credito_tipo_cliente_values": "|".join(sorted(credito_tipos)),
+                "region_values": "|".join(sorted(region_values)),
+                "cliente_municipios": "|".join(cliente_municipios),
                 "clienteCod": first_text(root, "clienteCod"),
                 "clienteDpi": first_text(root, "clienteDpi"),
                 "status": bt_status,
                 "severity": "ERROR" if bt_status == "FAIL" else "INFO",
-                "message": msg,
+                "message": "; ".join(messages),
             }
         )
 
@@ -251,6 +299,10 @@ def main() -> int:
             "input_xml_path",
             "expected_control_tree",
             "credito_banca_values",
+            "credito_estado_values",
+            "credito_tipo_cliente_values",
+            "region_values",
+            "cliente_municipios",
             "clienteCod",
             "clienteDpi",
             "status",

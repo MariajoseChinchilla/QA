@@ -1,6 +1,9 @@
 cnCod,cnNombre,cnEstado,cnRegion,cnMunicipio,cnDepartamento,abfCount
 1001,Agencia Asignacion Actual BT,Alta,Metropolitana,municipio_asignacion_bt,departamento_asignacion_bt,4
 7001,Agencia Ultimo Desembolso BT,Alta,Metropolitana,municipio_ultimo_desembolso_bt,departamento_ultimo_desembolso_bt,3
+2001,Agencia Municipio Vivienda BT,Alta,Metropolitana,municipio_vivienda_bt,departamento_vivienda_bt,2
+2002,Agencia Municipio Trabajo BT,Alta,Metropolitana,municipio_trabajo_bt,departamento_trabajo_bt,2
+2003,Agencia Historial Alterno BT,Alta,Metropolitana,municipio_historial_otro_bt,departamento_historial_otro_bt,2
 3101,Grupo R1 Deficit Cercania Unica BT,Alta,Metropolitana,municipio_r1_deficit_unico_bt,departamento_r1_deficit_unico_bt,3
 3102,Grupo R1 Deficit Empate BT,Alta,Metropolitana,municipio_r1_deficit_empate_bt,departamento_r1_deficit_empate_bt,3
 3103,Grupo R1 Cercania Unica BT,Alta,Metropolitana,municipio_r1_cercania_unica_bt,departamento_r1_cercania_unica_bt,3
