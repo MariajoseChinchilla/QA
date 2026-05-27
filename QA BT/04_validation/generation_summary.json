@@ -1,0 +1,32 @@
+{
+  "artifact": "QA BT",
+  "generated_at_utc": "2026-05-27T18:40:02.078304Z",
+  "generator_version": "XML_INPUT_GENERATOR_BT_FLAT_V1_2026_05_27",
+  "tree_version": "MOTOR_BT_DRAWIO_EXPANDED_V1",
+  "cases_per_route": 100,
+  "expanded_routes_generated": 82,
+  "total_xml_inputs_generated": 8200,
+  "flat_xml_folder": "02_inputs_xml_flat",
+  "flat_xml_count": 8200,
+  "manifest": "C:\\Users\\Mariajose\\Desktop\\qa100\\QA\\QA BT\\01_manifest\\case_manifest_100_bt.csv",
+  "expected_outputs": "C:\\Users\\Mariajose\\Desktop\\qa100\\QA\\QA BT\\03_expected\\expected_outputs.csv",
+  "expected_mode_counts": {
+    "EXACT": 4400,
+    "ACCEPTED_SET_OR_DETERMINISTIC_SINGLETON": 3600,
+    "BOLSON": 200
+  },
+  "expected_control_tree_counts": {
+    "BT": 8000,
+    "PED": 200
+  },
+  "random_cases_generated": 3600,
+  "static_cn_catalog_count": 7,
+  "static_abf_total": 20,
+  "activo_financiero_static_hash": "cdfd08ebb8d42d1c27d8ffb606e38ce547a8596895f753b84af81bad2eaa4ec3",
+  "duration_seconds": 11.21,
+  "notes": [
+    "Todos los XML de entrada se escriben únicamente en 02_inputs_xml_flat.",
+    "No se crea 02_inputs_xml ni carpetas por regla/ruta.",
+    "Las rutas de Regla no. 1 usan codAbfActual1..4 para representar salidas determinísticas o conjuntos aceptados."
+  ]
+}

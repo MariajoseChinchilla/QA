@@ -1,0 +1,16 @@
+{
+  "validated_at_utc": "2026-05-27T18:44:08.037662Z",
+  "manifest_rows": 8200,
+  "expected_rows": 8200,
+  "flat_xml_count": 8200,
+  "structure_failures": 0,
+  "manifest_failures": 0,
+  "xml_failures": 0,
+  "bt_domain_failures": 0,
+  "expected_control_tree_counts": {
+    "BT": 8000,
+    "PED": 200
+  },
+  "reports_dir": "C:\\Users\\Mariajose\\Desktop\\qa100\\QA\\QA BT\\04_validation\\outputs",
+  "overall_status": "PASS"
+}

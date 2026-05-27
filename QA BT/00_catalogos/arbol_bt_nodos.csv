@@ -1,0 +1,64 @@
+page,node_id,label,x,y,width,height
+Primera asignación,ezzXQeexgmv7tIZsH3Fz-5,¿Es cliente existente?,338,220,90,90
+Primera asignación,ezzXQeexgmv7tIZsH3Fz-6,Dejar al cliente en el bolsón de pendientes.,508.75,510,120,60
+Primera asignación,ezzXQeexgmv7tIZsH3Fz-19,¿El último ABF que le desembolsó un crédito sigue de alta?,800,137.5,110,130
+Primera asignación,ezzXQeexgmv7tIZsH3Fz-21,Asignar el cliente a dicho ABF.,1000,147.5,120,60
+Primera asignación,3NaJBI5vNzXj--Ik2lum-1,¿Es cliente BT?,130,230,80,80
+Primera asignación,3NaJBI5vNzXj--Ik2lum-6,Ir a árbol PED.,310,367.5,90,45
+Primera asignación,m7m8V_i1B0XcGh5YyqVW-5,Ir a Regla no. 1 con ABFs de alta BT que comparten género con el cliente,1010,307.5,120,60
+Primera asignación,ZNTUboTqIgMZgEmXN0C0-5,"¿Es cliente en lista de seguimiento, con contagio, CCR, bucket 2 o más o es empleado Bantrab?",508.75,85,140,120
+Primera asignación,ZNTUboTqIgMZgEmXN0C0-10,Asignar al cliente a todos los bolsones de las características que cumpla. Mantener la asignación del crédito moroso en su respectivo CN (el que estaba asignado originalmente).,848.75,-30,131.25,120
+General_post_primera_asignacion,RxC-W5iTMuDejqpVdBMd-32,¿El cliente está asignado a un ABF de alta?,740,610,100,98
+General_post_primera_asignacion,RxC-W5iTMuDejqpVdBMd-63,"¿En el último periodo, algún ABF de alta, distinto al asignado, le cosechó un crédito?",935,440,120,118
+General_post_primera_asignacion,RxC-W5iTMuDejqpVdBMd-65,Dejar al cliente en la asignación actual,1165,600,120,58
+General_post_primera_asignacion,pqSjcqdkTKrXXg7Sw1e2-1,Ir a Regla no. 1 con ABFs de alta BT que comparten género con el cliente,955,740,120,58
+General_post_primera_asignacion,tSmpvHZUn_gmzFLYWjaU-1,¿El ABF y el cliente son de la misma banca?,1165,310,80,80
+General_post_primera_asignacion,tSmpvHZUn_gmzFLYWjaU-8,"¿Al momento de la cosecha, el cliente ya había sido mostrado al ABF asignado como un cliente sugerido mensual?",1310,170,130,130
+General_post_primera_asignacion,tSmpvHZUn_gmzFLYWjaU-31,Mantener la asignación.,1315,490,120,58
+General_post_primera_asignacion,qdcoAeuV1fhNgsbRHJEx-1,Reasignar el cliente al ABF que realizó el desembolso.,1560,60,120,60
+General_post_primera_asignacion,qdcoAeuV1fhNgsbRHJEx-3,Mantener la asignación de ABF.,1595,340,120,60
+General_post_primera_asignacion,f2d-ecYLIxS2oJT32mUo-1,¿Es cliente BT?,240,699,80,80
+General_post_primera_asignacion,f2d-ecYLIxS2oJT32mUo-4,Ir a árbol PED,411.67,854,84,30
+General_post_primera_asignacion,Gt8t9wMWG9PkFsk00gT7-1,Ir a Regla no. 2,1050,890,120,60
+General_post_primera_asignacion,Gt8t9wMWG9PkFsk00gT7-2,"¿Es cliente sin ningún crédito activo pero que al hacerlo, sería categorizado como reactivado?",700,920,140,130
+General_post_primera_asignacion,Gt8t9wMWG9PkFsk00gT7-7,Ir a Regla no. 3,1101,1010,120,60
+General_post_primera_asignacion,Gt8t9wMWG9PkFsk00gT7-8,¿Es cliente existente?,421.67,690,100,98
+Regla no. 1,6IJ6AzzZ2OmpOY3jETdF-7,¿De entre estos ABFs existe alguno que tenga bolsón en déficit?,150,-140,140,120
+Regla no. 1,6IJ6AzzZ2OmpOY3jETdF-13,"¿De entre ellos, existe alguno que tenga mayor cercanía en edad con el cliente respecto de los demás?",360,-210,140,120
+Regla no. 1,6IJ6AzzZ2OmpOY3jETdF-16,Asignar el cliente a dicho ABF.,580,-280,110,40
+Regla no. 1,6IJ6AzzZ2OmpOY3jETdF-21,Seleccionar aleatoriamente un ABF de entre el grupo.,580,-120,130,60
+Regla no. 1,6IJ6AzzZ2OmpOY3jETdF-33,"¿De entre ellos, existe alguno que tenga la mayor cercanía en edad con el cliente respecto de los demás?",360,30,140,120
+Regla no. 1,6IJ6AzzZ2OmpOY3jETdF-40,Asignar el cliente a dicho ABF.,595,-30,120,60
+Regla no. 1,6IJ6AzzZ2OmpOY3jETdF-44,Seleccionar aleatoriamente un ABF de entre el grupo.,605,90,120,60
+Regla no. 2,naw2_eC8dKAwHw0Un7qm-2,¿Se conoce el municipio de vivienda?,80,80,110,90
+Regla no. 2,naw2_eC8dKAwHw0Un7qm-10,¿Alguna vez el cliente tuvo un desembolso en algún CN abierto del municipio de vivienda?,270,-50,150,110
+Regla no. 2,naw2_eC8dKAwHw0Un7qm-13,"¿De entre los ABFs de alta de los CNs abiertos del municipio de vivienda que le han desembolsado al cliente, existe alguno que tenga el mismo género que el cliente?",470,-200,190,170
+Regla no. 2,-1mtlP166NuXgSVluUXn-1,Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente,760,-240,120,60
+Regla no. 2,-1mtlP166NuXgSVluUXn-4,¿Se conoce el municipio de trabajo?,490,40,100,110
+Regla no. 2,-1mtlP166NuXgSVluUXn-7,Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente,760,-100,120,60
+Regla no. 2,-1mtlP166NuXgSVluUXn-11,¿Alguna vez el cliente tuvo un desembolso en algún CN abierto del municipio de trabajo?,290,530,130,110
+Regla no. 2,-1mtlP166NuXgSVluUXn-17,¿Alguna vez el cliente tuvo un desembolso en algún CN abierto del municipio de trabajo?,750,10,120,110
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-2,"¿De entre los ABFs de alta de los CNs abiertos del municipio de trabajo que le han desembolsado, existe alguno que tenga el mismo género que el cliente?",945,-52.5,160,155
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-9,Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente,1205,-70,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-10,Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente,1205,10,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-13,"¿De entre los ABFs de alta del municipio de vivienda, existe alguno que tenga el mismo género que el cliente?",700,360,140,110
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-28,Ir a Regla no. 1 con los ABFs que comparten género de los CNs abiertos del municipio,947.5,320,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-29,Ir a Regla no. 1 con los ABFs de los CNs abiertos del municipio,945,430,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-32,"¿De entre los ABFs de alta de los CNs abiertos del municipio de trabajo, existe alguno que tenga el mismo género que el cliente?",930,150,155,120
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-39,Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente,1185,140,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-40,Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente,1185,230,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-69,"¿De entre los ABFs de alta de los CNs abiertos del municipio de trabajo que le han desembolsado, existe alguno que tenga el mismo género que el cliente?",485,569,160,155
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-74,Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente,745,550,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-75,Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente,745,630,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-76,"¿De entre los ABFs de alta de los CNs abiertos del municipio de trabajo, existe alguno que tenga el mismo género que el cliente?",487.5,780,155,120
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-81,Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente,750,765,120,60
+Regla no. 2,527K3Z4LyMnmbk1qrz-Y-82,Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente,750,855,120,60
+Regla no. 3,1nHxQK7bkWPbLiSPuxvl-5,¿Se conoce el municipio de vivienda o trabajo?,340,570,110,90
+Regla no. 3,1nHxQK7bkWPbLiSPuxvl-10,¿Se conoce el municipio de vivienda?,520,470,110,90
+Regla no. 3,1nHxQK7bkWPbLiSPuxvl-11,Asignar el cliente al bolsón de clientes pendientes.,520,740,110,40
+Regla no. 3,xHElEWTvBo5OyQySt4o9-1,"¿De entre los CNs abiertos del municipio de vivienda, existe algún ABF que comparta género con el cliente?",700,350,130,120
+Regla no. 3,xHElEWTvBo5OyQySt4o9-4,"¿De entre los CNs abiertos del municipio de trabajo, existe algún ABF que comparta género con el cliente?",700,540,120,110
+Regla no. 3,-KqiP1JrCEFoUR8knjEI-1,Ir a Regla no. 1 con los ABFs que comparten género con el cliente de los CNs abiertos del municipio de vivienda,890,330,140,60
+Regla no. 3,-KqiP1JrCEFoUR8knjEI-3,Ir a Regla no. 1 con los ABFs de los CNs abiertos del municipio de vivienda,890,420,140,60
+Regla no. 3,-KqiP1JrCEFoUR8knjEI-10,Ir a Regla no. 1 con los ABFs que comparten género con el cliente de los CNs abiertos del municipio de trabajo,880,520,140,60
+Regla no. 3,-KqiP1JrCEFoUR8knjEI-11,Ir a Regla no. 1 con los ABFs de los CNs abiertos del municipio de trabajo,880,610,140,60

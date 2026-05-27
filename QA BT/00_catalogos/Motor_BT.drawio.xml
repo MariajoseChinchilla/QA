@@ -1,0 +1,901 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" pages="5">
+  <diagram id="hNGAkCGMEj1vBCHFr5vl" name="Primera asignación">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="10000" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="ezzXQeexgmv7tIZsH3Fz-6">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="265" as="sourcePoint" />
+            <mxPoint x="510" y="460" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="460" y="265" />
+              <mxPoint x="460" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-2" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="ezzXQeexgmv7tIZsH3Fz-1">
+          <mxGeometry x="0.0186" y="-2" relative="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-5" value="¿Es cliente existente?" style="rhombus;whiteSpace=wrap;html=1;fontSize=10;align=center;verticalAlign=middle;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="338" y="220" width="90" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-6" value="Dejar al cliente en el bolsón de pendientes." style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="508.75" y="510" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="ezzXQeexgmv7tIZsH3Fz-21">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="900" y="202.5" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-18" value="Sí" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="ezzXQeexgmv7tIZsH3Fz-17">
+          <mxGeometry x="-0.1001" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-19" value="&lt;p&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;¿El último ABF que le desembolsó un crédito sigue de alta?&lt;/font&gt;&lt;/p&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="800" y="137.5" width="110" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-21" value="Asignar el cliente a dicho ABF." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="147.5" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="m7m8V_i1B0XcGh5YyqVW-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="990" y="337.5" as="targetPoint" />
+            <mxPoint x="900" y="202.5" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ezzXQeexgmv7tIZsH3Fz-30" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="ezzXQeexgmv7tIZsH3Fz-29">
+          <mxGeometry x="0.0651" y="1" relative="1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3NaJBI5vNzXj--Ik2lum-2" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;" edge="1" parent="1" source="3NaJBI5vNzXj--Ik2lum-1" target="ezzXQeexgmv7tIZsH3Fz-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3NaJBI5vNzXj--Ik2lum-4" value="Sí" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" connectable="0" vertex="1" parent="3NaJBI5vNzXj--Ik2lum-2">
+          <mxGeometry x="-0.092" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3NaJBI5vNzXj--Ik2lum-5" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" edge="1" parent="1" source="3NaJBI5vNzXj--Ik2lum-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="380" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="260" y="350" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3NaJBI5vNzXj--Ik2lum-7" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" connectable="0" vertex="1" parent="3NaJBI5vNzXj--Ik2lum-5">
+          <mxGeometry x="-0.0498" y="-7" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3NaJBI5vNzXj--Ik2lum-1" value="¿Es cliente BT?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="130" y="230" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="3NaJBI5vNzXj--Ik2lum-6" value="Ir a árbol PED." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="310" y="367.5" width="90" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="3NaJBI5vNzXj--Ik2lum-8" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;fontSize=12;startSize=8;endSize=8;" edge="1" parent="1" source="3NaJBI5vNzXj--Ik2lum-1" target="3NaJBI5vNzXj--Ik2lum-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m7m8V_i1B0XcGh5YyqVW-5" value="&lt;span style=&quot;font-size: 10px;&quot;&gt;Ir a Regla no. 1 con ABFs de alta BT que comparten género con el cliente&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="307.5" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-2" value="" style="edgeStyle=segmentEdgeStyle;endArrow=classic;html=1;curved=0;rounded=0;endSize=8;startSize=8;sourcePerimeterSpacing=0;targetPerimeterSpacing=0;fontSize=12;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="ZNTUboTqIgMZgEmXN0C0-5">
+          <mxGeometry width="140" relative="1" as="geometry">
+            <mxPoint x="428" y="265" as="sourcePoint" />
+            <mxPoint x="529.25" y="-5" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="468" y="265" />
+              <mxPoint x="468" y="145" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-3" value="í" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" connectable="0" vertex="1" parent="ZNTUboTqIgMZgEmXN0C0-2">
+          <mxGeometry x="-0.0381" y="6" relative="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-4" value="Sí" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" connectable="0" vertex="1" parent="ZNTUboTqIgMZgEmXN0C0-2">
+          <mxGeometry x="-0.0381" y="9" relative="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-5" value="¿Es cliente en lista de seguimiento, con contagio, CCR, bucket 2 o más o es empleado Bantrab?&amp;nbsp;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="508.75" y="85" width="140" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-8" value="" style="edgeStyle=segmentEdgeStyle;endArrow=classic;html=1;curved=0;rounded=0;endSize=8;startSize=8;sourcePerimeterSpacing=0;targetPerimeterSpacing=0;fontSize=12;" edge="1" parent="1">
+          <mxGeometry width="140" relative="1" as="geometry">
+            <mxPoint x="648.75" y="140" as="sourcePoint" />
+            <mxPoint x="838.75" y="-10" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="680" y="140" />
+              <mxPoint x="680" y="-10" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-9" value="Sí" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" connectable="0" vertex="1" parent="ZNTUboTqIgMZgEmXN0C0-8">
+          <mxGeometry x="0.0675" y="6" relative="1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-10" value="Asignar al cliente a todos los bolsones de las características que cumpla. Mantener la asignación del crédito moroso en su respectivo CN (el que estaba asignado originalmente)." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="848.75" y="-30" width="131.25" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-11" value="" style="edgeStyle=segmentEdgeStyle;endArrow=classic;html=1;curved=0;rounded=0;endSize=8;startSize=8;sourcePerimeterSpacing=0;targetPerimeterSpacing=0;fontSize=12;" edge="1" parent="1">
+          <mxGeometry width="140" relative="1" as="geometry">
+            <mxPoint x="648.75" y="140" as="sourcePoint" />
+            <mxPoint x="788.75" y="200" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="680" y="140" />
+              <mxPoint x="680" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZNTUboTqIgMZgEmXN0C0-12" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" connectable="0" vertex="1" parent="ZNTUboTqIgMZgEmXN0C0-11">
+          <mxGeometry x="0.5017" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="General_post_primera_asignacion" id="vNXPt9nYqKWJeOkZPc9D">
+    <mxGraphModel dx="2567" dy="1064" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-52" edge="1" parent="1" source="RxC-W5iTMuDejqpVdBMd-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="865" y="670" />
+            </Array>
+            <mxPoint x="945" y="760" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ymPXeyyCXjyeTGA_GYrV-1" connectable="0" parent="RxC-W5iTMuDejqpVdBMd-52" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" value="No" vertex="1">
+          <mxGeometry relative="1" x="-0.0908" y="-4" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-64" edge="1" parent="1" source="RxC-W5iTMuDejqpVdBMd-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="RxC-W5iTMuDejqpVdBMd-63" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="790" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-68" connectable="0" parent="RxC-W5iTMuDejqpVdBMd-64" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.1794" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-32" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=10;align=center;verticalAlign=middle;fillColor=#ffe6cc;strokeColor=#d79b00;" value="¿El cliente está asignado a un ABF de alta?" vertex="1">
+          <mxGeometry height="98" width="100" x="740" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-66" edge="1" parent="1" source="RxC-W5iTMuDejqpVdBMd-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="RxC-W5iTMuDejqpVdBMd-65" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-67" connectable="0" parent="RxC-W5iTMuDejqpVdBMd-66" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.1259" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-70" edge="1" parent="1" source="RxC-W5iTMuDejqpVdBMd-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1115" y="500" />
+              <mxPoint x="1115" y="345" />
+            </Array>
+            <mxPoint x="1165" y="345" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-71" connectable="0" parent="RxC-W5iTMuDejqpVdBMd-70" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0841" y="3" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cfz-P1AMGzpFJZfM9BE5-6" connectable="0" parent="RxC-W5iTMuDejqpVdBMd-70" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; background-color: rgb(236, 236, 236);&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22%22%20style%3D%22edgeStyle%3DorthogonalEdgeStyle%3Brounded%3D0%3BorthogonalLoop%3D1%3BjettySize%3Dauto%3Bhtml%3D1%3B%22%20edge%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20relative%3D%221%22%20as%3D%22geometry%22%3E%3CmxPoint%20x%3D%221415%22%20y%3D%22445%22%20as%3D%22targetPoint%22%2F%3E%3CArray%20as%3D%22points%22%3E%3CmxPoint%20x%3D%221365%22%20y%3D%22600%22%2F%3E%3CmxPoint%20x%3D%221365%22%20y%3D%22445%22%2F%3E%3C%2FArray%3E%3CmxPoint%20x%3D%221304%22%20y%3D%22600%22%20as%3D%22sourcePoint%22%2F%3E%3C%2FmxGeometry%3E%3C%2FmxCell%3E%3CmxCell%20id%3D%223%22%20value%3D%22S%C3%AD%22%20style%3D%22edgeLabel%3Bhtml%3D1%3Balign%3Dcenter%3BverticalAlign%3Dmiddle%3Bresizable%3D0%3Bpoints%3D%5B%5D%3B%22%20connectable%3D%220%22%20vertex%3D%221%22%20parent%3D%222%22%3E%3CmxGeometry%20x%3D%22-0.0841%22%20y%3D%223%22%20relative%3D%221%22%20as%3D%22geometry%22%3E%3CmxPoint%20y%3D%22-1%22%20as%3D%22offset%22%2F%3E%3C%2FmxGeometry%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.2234" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-63" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=8;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#9673a6;" value="¿En el último periodo, algún ABF de alta, distinto al asignado, le cosechó un crédito?&amp;nbsp;" vertex="1">
+          <mxGeometry height="118" width="120" x="935" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="RxC-W5iTMuDejqpVdBMd-65" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Dejar al cliente en la asignación actual&lt;/font&gt;" vertex="1">
+          <mxGeometry height="58" width="120" x="1165" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="pqSjcqdkTKrXXg7Sw1e2-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Ir a Regla no. 1 con ABFs de alta BT que comparten género con el cliente" vertex="1">
+          <mxGeometry height="58" width="120" x="955" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-3" edge="1" parent="1" source="tSmpvHZUn_gmzFLYWjaU-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1275" y="350" />
+              <mxPoint x="1275" y="520" />
+            </Array>
+            <mxPoint x="1310" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-13" connectable="0" parent="tSmpvHZUn_gmzFLYWjaU-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.1246" y="-5" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-11" edge="1" parent="1" source="tSmpvHZUn_gmzFLYWjaU-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="tSmpvHZUn_gmzFLYWjaU-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-12" connectable="0" parent="tSmpvHZUn_gmzFLYWjaU-11" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.1899" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=9;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font&gt;¿El ABF y el cliente son de la misma banca?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="80" x="1165" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-6" edge="1" parent="1" source="tSmpvHZUn_gmzFLYWjaU-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="qdcoAeuV1fhNgsbRHJEx-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1490" y="235" />
+              <mxPoint x="1490" y="370" />
+            </Array>
+            <mxPoint x="1565" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-7" connectable="0" parent="tSmpvHZUn_gmzFLYWjaU-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0953" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-8" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=8;align=center;verticalAlign=middle;direction=south;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="¿Al momento de la cosecha, el cliente ya había sido mostrado al ABF asignado como un cliente sugerido mensual?" vertex="1">
+          <mxGeometry height="130" width="130" x="1310" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="tSmpvHZUn_gmzFLYWjaU-31" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9;fillColor=#f8cecc;strokeColor=#b85450;" value="Mantener la asignación." vertex="1">
+          <mxGeometry height="58" width="120" x="1315" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="qdcoAeuV1fhNgsbRHJEx-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Reasignar el cliente al ABF que realizó el desembolso." vertex="1">
+          <mxGeometry height="60" width="120" x="1560" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="qdcoAeuV1fhNgsbRHJEx-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#f8cecc;strokeColor=#b85450;" value="Mantener la asignación de ABF." vertex="1">
+          <mxGeometry height="60" width="120" x="1595" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="f2d-ecYLIxS2oJT32mUo-2" edge="1" parent="1" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="341.67" y="739" as="sourcePoint" />
+            <mxPoint x="407.67" y="739" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f2d-ecYLIxS2oJT32mUo-3" connectable="0" parent="f2d-ecYLIxS2oJT32mUo-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="0.1223" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f2d-ecYLIxS2oJT32mUo-5" edge="1" parent="1" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;" target="f2d-ecYLIxS2oJT32mUo-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320.0033333333335" y="760.6666666666665" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f2d-ecYLIxS2oJT32mUo-6" connectable="0" parent="f2d-ecYLIxS2oJT32mUo-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" value="No" vertex="1">
+          <mxGeometry relative="1" x="-0.2168" y="5" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f2d-ecYLIxS2oJT32mUo-1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="¿Es cliente BT?" vertex="1">
+          <mxGeometry height="80" width="80" x="240" y="699" as="geometry" />
+        </mxCell>
+        <mxCell id="f2d-ecYLIxS2oJT32mUo-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ir a árbol PED" vertex="1">
+          <mxGeometry height="30" width="84" x="411.67" y="854" as="geometry" />
+        </mxCell>
+        <mxCell id="ymPXeyyCXjyeTGA_GYrV-2" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="qdcoAeuV1fhNgsbRHJEx-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1435" y="235" as="sourcePoint" />
+            <mxPoint x="1534.9999999999995" y="105" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ymPXeyyCXjyeTGA_GYrV-3" connectable="0" parent="ymPXeyyCXjyeTGA_GYrV-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.1899" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Ir a Regla no. 2" vertex="1">
+          <mxGeometry height="60" width="120" x="1050" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=10;align=center;verticalAlign=middle;fillColor=#ffe6cc;strokeColor=#d79b00;" value="¿Es cliente sin ningún crédito activo pero que al hacerlo, sería categorizado como reactivado?" vertex="1">
+          <mxGeometry height="130" width="140" x="700" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-3" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="990" />
+              <mxPoint x="880" y="920" />
+              <mxPoint x="1025" y="920" />
+            </Array>
+            <mxPoint x="850" y="990" as="sourcePoint" />
+            <mxPoint x="1040" y="920" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-4" connectable="0" parent="Gt8t9wMWG9PkFsk00gT7-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.1794" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-5" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="990" />
+              <mxPoint x="880" y="1040" />
+            </Array>
+            <mxPoint x="860" y="990" as="sourcePoint" />
+            <mxPoint x="1090" y="1040" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-6" connectable="0" parent="Gt8t9wMWG9PkFsk00gT7-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="-0.1794" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Ir a Regla no. 3" vertex="1">
+          <mxGeometry height="60" width="120" x="1101" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-8" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=10;align=center;verticalAlign=middle;fillColor=#ffe6cc;strokeColor=#d79b00;" value="¿Es cliente existente?" vertex="1">
+          <mxGeometry height="98" width="100" x="421.67" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-10" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="740" />
+              <mxPoint x="560" y="670" />
+              <mxPoint x="705" y="670" />
+            </Array>
+            <mxPoint x="530" y="740" as="sourcePoint" />
+            <mxPoint x="720" y="670" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-11" connectable="0" parent="Gt8t9wMWG9PkFsk00gT7-10" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.1794" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-12" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="558" y="740" />
+              <mxPoint x="558" y="980" />
+              <mxPoint x="638" y="980" />
+            </Array>
+            <mxPoint x="521.6700000000001" y="740" as="sourcePoint" />
+            <mxPoint x="690" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gt8t9wMWG9PkFsk00gT7-13" connectable="0" parent="Gt8t9wMWG9PkFsk00gT7-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" value="No" vertex="1">
+          <mxGeometry relative="1" x="-0.0908" y="-4" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="ZOyDp-ZA05pKp4eWcGn6" name="Regla no. 1">
+    <mxGraphModel dx="1155" dy="2479" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-14" edge="1" parent="1" source="6IJ6AzzZ2OmpOY3jETdF-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="6IJ6AzzZ2OmpOY3jETdF-13" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-15" connectable="0" parent="6IJ6AzzZ2OmpOY3jETdF-14" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.05" y="3" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-32" edge="1" parent="1" source="6IJ6AzzZ2OmpOY3jETdF-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="80" />
+            </Array>
+            <mxPoint x="180" as="sourcePoint" />
+            <mxPoint x="350" y="80" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-35" connectable="0" parent="6IJ6AzzZ2OmpOY3jETdF-32" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.3846" y="3" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-7" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;p&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;¿De entre estos ABFs existe alguno que tenga bolsón en déficit?&lt;/span&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="120" width="140" x="150" y="-140" as="geometry" />
+        </mxCell>
+        <mxCell id="w13I6bvkjF96ncVKXb9m-80" edge="1" parent="1" source="6IJ6AzzZ2OmpOY3jETdF-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="6IJ6AzzZ2OmpOY3jETdF-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w13I6bvkjF96ncVKXb9m-81" connectable="0" parent="w13I6bvkjF96ncVKXb9m-80" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="0.1579" y="-7" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="w13I6bvkjF96ncVKXb9m-82" edge="1" parent="1" source="6IJ6AzzZ2OmpOY3jETdF-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="6IJ6AzzZ2OmpOY3jETdF-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w13I6bvkjF96ncVKXb9m-83" connectable="0" parent="w13I6bvkjF96ncVKXb9m-82" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.2727" y="-2" as="geometry">
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-13" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;p&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;¿De entre ellos, existe alguno que tenga mayor cercanía en edad con el cliente respecto de los demás?&lt;/span&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="120" width="140" x="360" y="-210" as="geometry" />
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="Asignar el cliente a dicho ABF." vertex="1">
+          <mxGeometry height="40" width="110" x="580" y="-280" as="geometry" />
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Seleccionar aleatoriamente un ABF de entre el grupo.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="130" x="580" y="-120" as="geometry" />
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-41" edge="1" parent="1" source="6IJ6AzzZ2OmpOY3jETdF-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="6IJ6AzzZ2OmpOY3jETdF-40" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-42" connectable="0" parent="6IJ6AzzZ2OmpOY3jETdF-41" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.1089" y="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="w13I6bvkjF96ncVKXb9m-84" edge="1" parent="1" source="6IJ6AzzZ2OmpOY3jETdF-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="6IJ6AzzZ2OmpOY3jETdF-44">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w13I6bvkjF96ncVKXb9m-85" connectable="0" parent="w13I6bvkjF96ncVKXb9m-84" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.4489" y="-1" as="geometry">
+            <mxPoint x="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-33" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;p&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;¿De entre ellos, existe alguno que tenga la mayor cercanía en edad con el cliente respecto de los demás?&lt;/span&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="120" width="140" x="360" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-40" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Asignar el cliente a dicho ABF." vertex="1">
+          <mxGeometry height="60" width="120" x="595" y="-30" as="geometry" />
+        </mxCell>
+        <mxCell id="6IJ6AzzZ2OmpOY3jETdF-44" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Seleccionar aleatoriamente un ABF de entre el grupo." vertex="1">
+          <mxGeometry height="60" width="120" x="605" y="90" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="fQ3s2YOwSGFowEdseP6-" name="Regla no. 2">
+    <mxGraphModel dx="2888" dy="3198" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="naw2_eC8dKAwHw0Un7qm-11" edge="1" parent="1" source="naw2_eC8dKAwHw0Un7qm-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="naw2_eC8dKAwHw0Un7qm-10" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="125" />
+              <mxPoint x="240" y="5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="naw2_eC8dKAwHw0Un7qm-12" connectable="0" parent="naw2_eC8dKAwHw0Un7qm-11" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.1133" y="4" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-15" edge="1" parent="1" source="naw2_eC8dKAwHw0Un7qm-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="-1mtlP166NuXgSVluUXn-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-16" connectable="0" parent="-1mtlP166NuXgSVluUXn-15" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.2621" y="4" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="naw2_eC8dKAwHw0Un7qm-2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;span style=&quot;font-size: 10px;&quot;&gt;¿Se conoce el municipio de vivienda?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="90" width="110" x="80" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="naw2_eC8dKAwHw0Un7qm-14" edge="1" parent="1" source="naw2_eC8dKAwHw0Un7qm-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="naw2_eC8dKAwHw0Un7qm-13" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="5" />
+              <mxPoint x="450" y="-110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="naw2_eC8dKAwHw0Un7qm-15" connectable="0" parent="naw2_eC8dKAwHw0Un7qm-14" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="0.0726" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-5" edge="1" parent="1" source="naw2_eC8dKAwHw0Un7qm-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-1mtlP166NuXgSVluUXn-4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-6" connectable="0" parent="-1mtlP166NuXgSVluUXn-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0939" y="-1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="naw2_eC8dKAwHw0Un7qm-10" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 8px;&quot;&gt;¿Alguna vez el cliente tuvo un desembolso en algún CN abierto del municipio de vivienda?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="150" x="270" y="-50" as="geometry" />
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-2" edge="1" parent="1" source="naw2_eC8dKAwHw0Un7qm-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-1mtlP166NuXgSVluUXn-1" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-3" connectable="0" parent="-1mtlP166NuXgSVluUXn-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0875" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-8" edge="1" parent="1" source="naw2_eC8dKAwHw0Un7qm-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="-1mtlP166NuXgSVluUXn-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-9" connectable="0" parent="-1mtlP166NuXgSVluUXn-8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0956" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="naw2_eC8dKAwHw0Un7qm-13" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 8px;&quot;&gt;¿De entre los ABFs de alta de los CNs abiertos del municipio de vivienda que le han desembolsado al cliente, existe alguno que tenga el mismo género que el cliente?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="170" width="190" x="470" y="-200" as="geometry" />
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="760" y="-240" as="geometry" />
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-18" edge="1" parent="1" source="-1mtlP166NuXgSVluUXn-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-1mtlP166NuXgSVluUXn-17" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-1" connectable="0" parent="-1mtlP166NuXgSVluUXn-18" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0787" y="5" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-14" edge="1" parent="1" source="-1mtlP166NuXgSVluUXn-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-15" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-14" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.1473" y="2" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-4" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;span style=&quot;font-size: 8px;&quot;&gt;¿Se conoce el municipio de trabajo?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="110" width="100" x="490" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="760" y="-100" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-84" edge="1" parent="1" source="-1mtlP166NuXgSVluUXn-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-69">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="585" />
+              <mxPoint x="450" y="647" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-85" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-84" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.1927" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-86" edge="1" parent="1" source="-1mtlP166NuXgSVluUXn-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-76">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="355" y="795" />
+              <mxPoint x="440" y="795" />
+              <mxPoint x="440" y="840" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-87" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-86" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.1999" y="4" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-11" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;span&gt;¿Alguna vez el cliente tuvo un desembolso en algún CN abierto del municipio de trabajo?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="110" width="130" x="290" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-3" edge="1" parent="1" source="-1mtlP166NuXgSVluUXn-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="527K3Z4LyMnmbk1qrz-Y-2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-4" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="0.1751" y="-5" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-33" edge="1" parent="1" source="-1mtlP166NuXgSVluUXn-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-32">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-34" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-33" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.1612" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-1mtlP166NuXgSVluUXn-17" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;span style=&quot;font-size: 8px;&quot;&gt;¿Alguna vez el cliente tuvo un desembolso en algún CN abierto del municipio de trabajo?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="110" width="120" x="750" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;span style=&quot;font-size: 8px;&quot;&gt;¿De entre los ABFs de alta de los CNs abiertos del municipio de trabajo que le han desembolsado, existe alguno que tenga el mismo género que el cliente?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="155" width="160" x="945" y="-52.5" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-5" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="527K3Z4LyMnmbk1qrz-Y-9" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1155" y="26" />
+              <mxPoint x="1155" y="-40" />
+            </Array>
+            <mxPoint x="1105" y="25" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-6" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0875" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-7" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-10">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1105" y="25" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-8" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-7" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0956" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="1205" y="-70" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="1205" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-13" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 8px;&quot;&gt;¿De entre los ABFs de alta del municipio de vivienda, existe alguno que tenga el mismo género que el cliente?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="140" x="700" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-24" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="527K3Z4LyMnmbk1qrz-Y-28" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="895" y="416" />
+              <mxPoint x="895" y="350" />
+            </Array>
+            <mxPoint x="845" y="415" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-25" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-24" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0875" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-26" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-29">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="845" y="415" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-27" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-26" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0956" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-28" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs que comparten género de los CNs abiertos del municipio&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="947.5" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-29" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs de los CNs abiertos del municipio&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="945" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-32" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=8;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;span&gt;¿De entre los ABFs de alta de los CNs abiertos del municipio de trabajo, existe alguno que tenga el mismo género que el cliente?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="120" width="155" x="930" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-35" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="527K3Z4LyMnmbk1qrz-Y-39" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1135" y="216" />
+              <mxPoint x="1135" y="170" />
+            </Array>
+            <mxPoint x="1085" y="215" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-36" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-35" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0875" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-37" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-40">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1085" y="215" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-38" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-37" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0956" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-39" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="1185" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-40" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="1185" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-69" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;span style=&quot;font-size: 8px;&quot;&gt;¿De entre los ABFs de alta de los CNs abiertos del municipio de trabajo que le han desembolsado, existe alguno que tenga el mismo género que el cliente?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="155" width="160" x="485" y="569" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-70" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="527K3Z4LyMnmbk1qrz-Y-74" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="695" y="646" />
+              <mxPoint x="695" y="580" />
+            </Array>
+            <mxPoint x="645" y="645" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-71" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-70" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0875" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-72" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-75">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="645" y="645" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-73" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-72" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0956" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-74" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="745" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-75" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="745" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-76" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontSize=8;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;span&gt;¿De entre los ABFs de alta de los CNs abiertos del municipio de trabajo, existe alguno que tenga el mismo género que el cliente?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="120" width="155" x="487.5" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-77" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="527K3Z4LyMnmbk1qrz-Y-81" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="700" y="841" />
+              <mxPoint x="700" y="795" />
+            </Array>
+            <mxPoint x="650" y="840" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-78" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-77" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0875" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-79" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="527K3Z4LyMnmbk1qrz-Y-82">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="650" y="840" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-80" connectable="0" parent="527K3Z4LyMnmbk1qrz-Y-79" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0956" y="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-81" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs que comparten género de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="750" y="765" as="geometry" />
+        </mxCell>
+        <mxCell id="527K3Z4LyMnmbk1qrz-Y-82" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs de los CNs que le han desembolsado al cliente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="750" y="855" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="DoABB7GcTo_6o2Iwvqdv" name="Regla no. 3">
+    <mxGraphModel dx="1155" dy="479" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="1nHxQK7bkWPbLiSPuxvl-1" edge="1" parent="1" source="1nHxQK7bkWPbLiSPuxvl-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="1nHxQK7bkWPbLiSPuxvl-10" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="490" y="615" />
+              <mxPoint x="490" y="515" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1nHxQK7bkWPbLiSPuxvl-2" connectable="0" parent="1nHxQK7bkWPbLiSPuxvl-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0745" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1nHxQK7bkWPbLiSPuxvl-3" edge="1" parent="1" source="1nHxQK7bkWPbLiSPuxvl-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="1nHxQK7bkWPbLiSPuxvl-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="1nHxQK7bkWPbLiSPuxvl-4" connectable="0" parent="1nHxQK7bkWPbLiSPuxvl-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0123" y="3" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1nHxQK7bkWPbLiSPuxvl-5" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;¿Se conoce el municipio de vivienda o trabajo?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="110" x="340" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="xHElEWTvBo5OyQySt4o9-2" edge="1" parent="1" source="1nHxQK7bkWPbLiSPuxvl-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xHElEWTvBo5OyQySt4o9-1" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="650" y="515" />
+              <mxPoint x="650" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xHElEWTvBo5OyQySt4o9-3" connectable="0" parent="xHElEWTvBo5OyQySt4o9-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.0959" y="-1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xHElEWTvBo5OyQySt4o9-5" edge="1" parent="1" source="1nHxQK7bkWPbLiSPuxvl-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xHElEWTvBo5OyQySt4o9-4" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="650" y="515" />
+              <mxPoint x="650" y="595" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xHElEWTvBo5OyQySt4o9-6" connectable="0" parent="xHElEWTvBo5OyQySt4o9-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0286" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1nHxQK7bkWPbLiSPuxvl-10" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;span style=&quot;font-size: 10px;&quot;&gt;¿Se conoce el municipio de vivienda?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="90" width="110" x="520" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="1nHxQK7bkWPbLiSPuxvl-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Asignar el cliente al bolsón de clientes pendientes.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="110" x="520" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-2" edge="1" parent="1" source="xHElEWTvBo5OyQySt4o9-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-KqiP1JrCEFoUR8knjEI-1" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-5" connectable="0" parent="-KqiP1JrCEFoUR8knjEI-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="0.0512" y="-3" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-4" edge="1" parent="1" source="xHElEWTvBo5OyQySt4o9-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="-KqiP1JrCEFoUR8knjEI-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-6" connectable="0" parent="-KqiP1JrCEFoUR8knjEI-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0104" y="3" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xHElEWTvBo5OyQySt4o9-1" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 8px;&quot;&gt;¿De entre los CNs abiertos del municipio de vivienda, existe algún ABF que comparta género con el cliente?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="120" width="130" x="700" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-12" edge="1" parent="1" source="xHElEWTvBo5OyQySt4o9-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="-KqiP1JrCEFoUR8knjEI-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-13" connectable="0" parent="-KqiP1JrCEFoUR8knjEI-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Sí" vertex="1">
+          <mxGeometry relative="1" x="-0.061" y="-1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xHElEWTvBo5OyQySt4o9-4" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 8px;&quot;&gt;¿De entre los CNs abiertos del municipio de trabajo, existe algún ABF que comparta género con el cliente?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="120" x="700" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs que comparten género con el cliente de los CNs abiertos del municipio de vivienda&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="890" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs de los CNs abiertos del municipio de vivienda&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="890" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-8" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="-KqiP1JrCEFoUR8knjEI-11">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820" y="600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-9" connectable="0" parent="-KqiP1JrCEFoUR8knjEI-8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.0104" y="3" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs que comparten género con el cliente de los CNs abiertos del municipio de trabajo&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="880" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="-KqiP1JrCEFoUR8knjEI-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Ir a Regla no. 1 con los ABFs de los CNs abiertos del municipio de trabajo&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="880" y="610" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

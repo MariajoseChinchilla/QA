@@ -1,0 +1,731 @@
+#!/usr/bin/env python3
+"""Generate flat XML inputs for the BT QA decision tree."""
+
+from __future__ import annotations
+
+import csv
+import hashlib
+import importlib.util
+import json
+import os
+import random
+import re
+import time
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+from xml.sax.saxutils import escape
+
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+BASE = SCRIPT_DIR.parent
+CATALOG = BASE / "00_catalogos" / "catalogo_rutas_arbol_bt_expandido.csv"
+MANIFEST = BASE / "01_manifest" / "case_manifest_100_bt.csv"
+EXPECTED = BASE / "03_expected" / "expected_outputs.csv"
+FLAT_DIR = BASE / "02_inputs_xml_flat"
+VALIDATION_DIR = BASE / "04_validation"
+CASES_PER_ROUTE = int(os.getenv("QA_BT_CASES_PER_ROUTE", "100"))
+RUN_VERSION = "XML_INPUT_GENERATOR_BT_FLAT_V1_2026_05_27"
+TREE_VERSION = "MOTOR_BT_DRAWIO_EXPANDED_V1"
+MAPPING_VERSION = "BT_FLAT_V1"
+
+BANCA_BT = "banca_trabajadores"
+BANCA_BP = "banca_personas"
+REGION = "Metropolitana"
+
+MAX_ABF_SLOTS = 4
+
+
+def esc(value: object) -> str:
+    return escape("" if value is None else str(value), {'"': "&quot;"})
+
+
+def tag(name: str, value: object) -> str:
+    return f"<{name}>{esc(value)}</{name}>"
+
+
+def load_catalog() -> list[dict[str, str]]:
+    if not CATALOG.exists():
+        spec = importlib.util.spec_from_file_location(
+            "extract_bt_routes_from_drawio", SCRIPT_DIR / "extract_bt_routes_from_drawio.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(module)  # type: ignore[union-attr]
+        module.main()
+    with CATALOG.open(newline="", encoding="utf-8-sig") as handle:
+        return list(csv.DictReader(handle))
+
+
+def r1_id(expanded_route_id: str) -> str | None:
+    match = re.search(r"(R1-\d{3})", expanded_route_id)
+    return match.group(1) if match else None
+
+
+def is_random_route(route: dict[str, str]) -> bool:
+    return "RANDOM" in route["final_output_class_id"] or "ACCEPTED_SET" in route["expected_mode"]
+
+
+def abf(code: str, estado: str, banca: str, edad: int, bolson: str, patronos: bool = False) -> dict[str, object]:
+    return {
+        "cod": code,
+        "estado": estado,
+        "vacacion": "0",
+        "banca": banca,
+        "edad": edad,
+        "patronos": ["patrono1", "patrono2", "patrono3"] if patronos else ["-1", "-1", "-1"],
+        "bolson": bolson,
+    }
+
+
+def cn(
+    code: str,
+    name: str,
+    municipio: str,
+    departamento: str,
+    abfs: list[dict[str, object]],
+    estado: str = "Alta",
+) -> dict[str, object]:
+    return {
+        "cod": code,
+        "nombre": name,
+        "estado": estado,
+        "region": REGION,
+        "municipio": municipio,
+        "departamento": departamento,
+        "abfs": abfs,
+    }
+
+
+def build_static_catalog() -> list[dict[str, object]]:
+    return [
+        cn(
+            "1001",
+            "Agencia Asignacion Actual BT",
+            "municipio_asignacion_bt",
+            "departamento_asignacion_bt",
+            [
+                abf("500001", "Alta", BANCA_BT, 38, "Equilibrio", True),
+                abf("500002", "Baja", BANCA_BT, 41, "Equilibrio", True),
+                abf("500003", "Alta", BANCA_BP, 39, "Equilibrio"),
+                abf("500004", "Alta", BANCA_BT, 55, "Exceso"),
+            ],
+        ),
+        cn(
+            "7001",
+            "Agencia Ultimo Desembolso BT",
+            "municipio_ultimo_desembolso_bt",
+            "departamento_ultimo_desembolso_bt",
+            [
+                abf("700101", "Alta", BANCA_BT, 34, "Equilibrio", True),
+                abf("700102", "Alta", BANCA_BP, 34, "Equilibrio"),
+                abf("700103", "Baja", BANCA_BT, 34, "Equilibrio", True),
+            ],
+        ),
+        cn(
+            "3101",
+            "Grupo R1 Deficit Cercania Unica BT",
+            "municipio_r1_deficit_unico_bt",
+            "departamento_r1_deficit_unico_bt",
+            [
+                abf("310101", "Alta", BANCA_BT, 35, "Deficit", True),
+                abf("310102", "Alta", BANCA_BT, 49, "Deficit", True),
+                abf("310103", "Alta", BANCA_BT, 57, "Equilibrio"),
+            ],
+        ),
+        cn(
+            "3102",
+            "Grupo R1 Deficit Empate BT",
+            "municipio_r1_deficit_empate_bt",
+            "departamento_r1_deficit_empate_bt",
+            [
+                abf("310201", "Alta", BANCA_BT, 35, "Deficit", True),
+                abf("310202", "Alta", BANCA_BT, 35, "Deficit", True),
+                abf("310203", "Alta", BANCA_BT, 51, "Equilibrio"),
+            ],
+        ),
+        cn(
+            "3103",
+            "Grupo R1 Cercania Unica BT",
+            "municipio_r1_cercania_unica_bt",
+            "departamento_r1_cercania_unica_bt",
+            [
+                abf("310301", "Alta", BANCA_BT, 35, "Equilibrio", True),
+                abf("310302", "Alta", BANCA_BT, 48, "Equilibrio", True),
+                abf("310303", "Alta", BANCA_BT, 59, "Exceso"),
+            ],
+        ),
+        cn(
+            "3104",
+            "Grupo R1 Empate General BT",
+            "municipio_r1_empate_general_bt",
+            "departamento_r1_empate_general_bt",
+            [
+                abf("310401", "Alta", BANCA_BT, 35, "Equilibrio", True),
+                abf("310402", "Alta", BANCA_BT, 35, "Equilibrio", True),
+                abf("310403", "Alta", BANCA_BT, 54, "Exceso"),
+            ],
+        ),
+        cn(
+            "9001",
+            "Bolson Pendientes BT",
+            "municipio_pendientes_bt",
+            "departamento_pendientes_bt",
+            [abf("900101", "Alta", BANCA_BT, 44, "Equilibrio")],
+        ),
+    ]
+
+
+R1_TARGETS = {
+    "R1-001": ("3101", ["310101"], "EXACT"),
+    "R1-002": ("3102", ["310201", "310202"], "ACCEPTED_SET"),
+    "R1-003": ("3103", ["310301"], "EXACT"),
+    "R1-004": ("3104", ["310401", "310402"], "ACCEPTED_SET"),
+}
+
+
+def by_code(cns: list[dict[str, object]]) -> dict[str, dict[str, object]]:
+    out: dict[str, dict[str, object]] = {}
+    for item in cns:
+        out[str(item["cod"])] = item
+        for item_abf in item["abfs"]:  # type: ignore[index]
+            out[str(item_abf["cod"])] = {"cn": item, "abf": item_abf}
+    return out
+
+
+def centro_xml(item: dict[str, object]) -> str:
+    chunks = [
+        "<CentroDeNegocio>",
+        tag("cnCod", item["cod"]),
+        tag("cnNombre", item["nombre"]),
+        tag("cnEstado", item["estado"]),
+        tag("cnRegion", item["region"]),
+        tag("cnMunicipio", item["municipio"]),
+        tag("cnDepartamento", item["departamento"]),
+    ]
+    for item_abf in item["abfs"]:  # type: ignore[index]
+        patronos = item_abf["patronos"]  # type: ignore[index]
+        chunks.extend(
+            [
+                "<Abf>",
+                tag("asignadoCod", item_abf["cod"]),
+                tag("asignadoEstado", item_abf["estado"]),
+                tag("asignadoEnVacacion", item_abf["vacacion"]),
+                tag("asignadoBanca", item_abf["banca"]),
+                tag("asignadoEdad", item_abf["edad"]),
+                tag("especialistaPatrono1", patronos[0]),
+                tag("especialistaPatrono2", patronos[1]),
+                tag("especialistaPatrono3", patronos[2]),
+                tag("asignadoBolsonAcumulativo", "75000" if item_abf["bolson"] == "Deficit" else "150000"),
+                tag("asignadoBolsonLimExposicion", "100000"),
+                tag("asignadoBolsonEstado", item_abf["bolson"]),
+                tag("participanteCosechaCod", item["cod"] if item_abf["estado"] == "Alta" else "-1"),
+                tag("participanteCosechaVacacion", "0"),
+                "</Abf>",
+            ]
+        )
+    chunks.append("</CentroDeNegocio>")
+    return "".join(chunks)
+
+
+def credito_xml(credito: dict[str, object]) -> str:
+    fields = [
+        "creditoNo",
+        "creditoMonto",
+        "creditoTasa",
+        "creditoTipo",
+        "creditoEstado",
+        "creditoPatronoNombre",
+        "creditoPatronoCod",
+        "creditoBanca",
+        "creditoTipoCliente",
+        "creditoRegion",
+        "creditoFechaConsecion",
+        "creditoFechaCancelacion",
+        "creditoPatrono",
+        "participanteLaborCod",
+        "participanteLaborEstado",
+        "participanteLaborEdad",
+        "participanteLaborCn",
+        "participanteLaborBanca",
+        "participanteLaborRegion",
+        "participanteLaborMunicipio",
+        "participanteLaborVacacion",
+        "participanteLaborTipo",
+        "cnCosechaCod",
+        "cnCosechaNombre",
+        "cnCosechaEstado",
+        "cnCosechaRegion",
+        "cnCosechaDepartamento",
+        "cnCosechaMunicipio",
+    ]
+    return "<Credito>" + "".join(tag(field, credito.get(field, "")) for field in fields) + "</Credito>"
+
+
+def base_credit(case_id: str, seq: int, banca: str, target_cn: dict[str, object], labor_abf: str) -> dict[str, object]:
+    return {
+        "creditoNo": f"BT{seq:02d}{case_id[-4:]}",
+        "creditoMonto": "25000.00",
+        "creditoTasa": "17.5",
+        "creditoTipo": "Nuevo",
+        "creditoEstado": "C",
+        "creditoPatronoNombre": "patrono1",
+        "creditoPatronoCod": "P001",
+        "creditoBanca": banca,
+        "creditoTipoCliente": "CR",
+        "creditoRegion": REGION,
+        "creditoFechaConsecion": "2026-04-15",
+        "creditoFechaCancelacion": "2028-04-15",
+        "creditoPatrono": "patrono1",
+        "participanteLaborCod": labor_abf,
+        "participanteLaborEstado": "Alta",
+        "participanteLaborEdad": "35",
+        "participanteLaborCn": target_cn["cod"],
+        "participanteLaborBanca": banca,
+        "participanteLaborRegion": target_cn["region"],
+        "participanteLaborMunicipio": target_cn["municipio"],
+        "participanteLaborVacacion": "0",
+        "participanteLaborTipo": "abf",
+        "cnCosechaCod": target_cn["cod"],
+        "cnCosechaNombre": target_cn["nombre"],
+        "cnCosechaEstado": target_cn["estado"],
+        "cnCosechaRegion": target_cn["region"],
+        "cnCosechaDepartamento": target_cn["departamento"],
+        "cnCosechaMunicipio": target_cn["municipio"],
+    }
+
+
+def scenario(route: dict[str, str], case_number: int, global_number: int, cns_by_code: dict[str, dict[str, object]]) -> dict[str, object]:
+    expanded_id = route["expanded_route_id"]
+    class_id = route["final_output_class_id"]
+    text = " > ".join([route.get("base_decision_path_text", ""), route.get("subroute_path", "")])
+    route_r1 = r1_id(expanded_id)
+    seed = int(hashlib.sha256(f"{expanded_id}:{case_number}".encode("utf-8")).hexdigest()[:12], 16)
+    rng = random.Random(seed)
+
+    target_cn_code = "1001"
+    expected_abfs = ["500001"]
+    mode = route["expected_mode"]
+    expected_desc = route["final_expected_output"]
+    bolson = ""
+    expected_tree = "BT"
+
+    if route_r1:
+        target_cn_code, expected_abfs, r1_mode = R1_TARGETS[route_r1]
+        if mode == "EXACT" and r1_mode == "ACCEPTED_SET":
+            mode = "ACCEPTED_SET_OR_DETERMINISTIC_SINGLETON"
+    elif "DIRECT_PED" in class_id:
+        expected_tree = "PED"
+        expected_abfs = [""]
+        target_cn_code = ""
+    elif "PENDING_BOLSON" in class_id:
+        target_cn_code = "9001"
+        expected_abfs = [""]
+        bolson = "PENDIENTES"
+    elif "MORA_BOLSONES" in class_id:
+        target_cn_code = "1001"
+        expected_abfs = ["500001"]
+        bolson = "LISTA_SEGUIMIENTO|CONTAGIO|CCR|BUCKET_2|EMPLEADO_BANTRAB"
+    elif "ASSIGN_LAST_ABF" in class_id or "REASSIGN_DISBURSER" in class_id:
+        target_cn_code = "7001"
+        expected_abfs = ["700101"]
+
+    target_cn = cns_by_code.get(target_cn_code) if target_cn_code else None
+    if target_cn is None:
+        target_cn = cns_by_code["1001"]
+
+    is_bt = "¿Es cliente BT? = No" not in text
+    credito_banca = BANCA_BT if is_bt else BANCA_BP
+    cliente_vivienda = "municipio_base_bt"
+    cliente_trabajo = "municipio_trabajo_bt"
+    if route_r1:
+        if "municipio de trabajo" in route.get("candidate_scope", ""):
+            cliente_trabajo = str(target_cn["municipio"])
+            if "¿Se conoce el municipio de vivienda? = No" in text:
+                cliente_vivienda = "SIN_MUNICIPIO"
+        else:
+            cliente_vivienda = str(target_cn["municipio"])
+            if "¿Se conoce el municipio de trabajo? = No" in text:
+                cliente_trabajo = "SIN_MUNICIPIO"
+    if "¿Se conoce el municipio de vivienda o trabajo? = No" in text:
+        cliente_vivienda = "SIN_MUNICIPIO"
+        cliente_trabajo = "SIN_MUNICIPIO"
+
+    assigned = "Sí" if any(
+        marker in text
+        for marker in [
+            "¿El cliente está asignado a un ABF de alta? = Sí",
+            "¿El ABF y el cliente son de la misma banca?",
+            "Mantener la asignación",
+        ]
+    ) else "No"
+    if "¿El cliente está asignado a un ABF de alta? = No" in text:
+        assigned = "No"
+
+    abf_sugerido = {
+        "abfSugeridoCod": "500001" if assigned == "Sí" else "",
+        "abfSugeridoEstado": "Alta" if assigned == "Sí" else "",
+        "abfSugeridoEdad": "38" if assigned == "Sí" else "",
+        "abfSugeridoCnCod": "1001" if assigned == "Sí" else "",
+        "abfSugeridoBanca": BANCA_BT if assigned == "Sí" else "",
+        "abfSugeridoRegion": REGION if assigned == "Sí" else "",
+        "abfSugeridoMunicipio": "municipio_asignacion_bt" if assigned == "Sí" else "",
+        "abfSugeridoOportunidad": "Sugerido" if "mensual? = Sí" in text else ("No_Sugerido" if assigned == "Sí" else ""),
+    }
+
+    if "¿El ABF y el cliente son de la misma banca? = No" in text:
+        abf_sugerido["abfSugeridoBanca"] = BANCA_BP
+
+    cliente_es_sugerido = "Si" if "mensual? = Sí" in text else "No"
+    if "lista de seguimiento" in text.lower() or "empleado bantrab" in text.lower():
+        es_trabajador_interno = "S"
+    else:
+        es_trabajador_interno = "N"
+
+    labor_abf = expected_abfs[0] if expected_abfs and expected_abfs[0] else "700101"
+    if route_r1 and labor_abf:
+        labor_abf = expected_abfs[0]
+
+    creditos: list[dict[str, object]] = []
+    if expected_tree == "PED":
+        creditos.append(base_credit(expanded_id, 1, BANCA_BP, cns_by_code["1001"], "500003"))
+    elif "sin ningún crédito activo" in text and "reactivado? = No" in text:
+        credit = base_credit(expanded_id, 1, credito_banca, target_cn, labor_abf)
+        credit["creditoEstado"] = "C"
+        creditos.append(credit)
+    else:
+        creditos.append(base_credit(expanded_id, 1, credito_banca, target_cn, labor_abf))
+
+    if "desembolsado" in route.get("candidate_scope", "") or "último periodo" in text or "último ABF" in text:
+        hist_cn = target_cn if route_r1 else cns_by_code["7001"]
+        hist_abf = labor_abf if route_r1 else "700101"
+        history = base_credit(expanded_id, 2, credito_banca, hist_cn, hist_abf)
+        history["creditoFechaConsecion"] = "2026-05-02"
+        history["creditoFechaCancelacion"] = "2028-05-02"
+        creditos.append(history)
+
+    if "lista de seguimiento" in text.lower():
+        mora = base_credit(expanded_id, 3, credito_banca, cns_by_code["1001"], "500001")
+        mora["creditoEstado"] = "D"
+        creditos.append(mora)
+
+    return {
+        "case_id": f"{expanded_id}__{case_number:04d}",
+        "seed": seed,
+        "codCliente": str(80000000 + global_number),
+        "dpiCliente": str(4000000000000 + global_number),
+        "clienteEdad": str(35 + rng.randint(0, 3)),
+        "clienteRegion": REGION,
+        "clienteMunicipioVivienda": cliente_vivienda,
+        "clienteMunicipioTrabajo": cliente_trabajo,
+        "clienteEsSugerido": cliente_es_sugerido,
+        "clienteEstabaAsignadoAbf": assigned,
+        "clienteEsCarteraDelCnCod": "1001" if assigned == "Sí" else "-1",
+        "clienteEsCarteraDelAbfCod": "500001" if assigned == "Sí" else "-1",
+        "esTrabajadorInterno": es_trabajador_interno,
+        **abf_sugerido,
+        "creditos": creditos,
+        "codCnActual": target_cn_code,
+        "codAbfsActuales": expected_abfs[:MAX_ABF_SLOTS],
+        "codCnAnterior": "1001" if assigned == "Sí" else "-1",
+        "codAbfAnterior": "500001" if assigned == "Sí" else "-1",
+        "bolson": bolson,
+        "expected_control_tree": expected_tree,
+        "expected_mode": mode,
+        "expected_description": expected_desc,
+        "is_random_selection": "Si" if is_random_route(route) else "No",
+        "tipo_cliente_expected": "CR" if "reactivado? = Sí" in text else "CE",
+    }
+
+
+def build_xml(ctx: dict[str, object], static_activo_financiero: str) -> str:
+    solicitud_fields = [
+        "clienteNombre",
+        "clienteCod",
+        "clienteEdad",
+        "clienteRegion",
+        "clienteMunicipioVivienda",
+        "clienteMunicipioTrabajo",
+        "clienteEsSugerido",
+        "clienteEstabaAsignadoAbf",
+        "clienteEsCarteraDelCnCod",
+        "clienteFueDesembolsadoEnElUltimoMes",
+        "clienteEsCarteraDelAbfCod",
+        "abfSugeridoCod",
+        "abfSugeridoEstado",
+        "abfSugeridoEdad",
+        "abfSugeridoCnCod",
+        "abfSugeridoBanca",
+        "abfSugeridoRegion",
+        "abfSugeridoMunicipio",
+        "abfSugeridoOportunidad",
+        "clienteDpi",
+        "esTrabajadorInterno",
+    ]
+    data = dict(ctx)
+    data["clienteNombre"] = f"Cliente QA BT {ctx['case_id']}"
+    data["clienteCod"] = ctx["codCliente"]
+    data["clienteDpi"] = ctx["dpiCliente"]
+    data["clienteFueDesembolsadoEnElUltimoMes"] = "Si" if len(ctx["creditos"]) > 1 else "No"  # type: ignore[arg-type]
+    xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
+        "<soapenv:Header/><soapenv:Body><rule:entryPointAdmonCarteraV2><solicitud>",
+        "".join(tag(field, data.get(field, "")) for field in solicitud_fields),
+        "<InformacionGeneral>",
+        tag("fecha", "2026-05-27"),
+        "</InformacionGeneral>",
+        "<ActivoCrediticio>",
+        "".join(credito_xml(credito) for credito in ctx["creditos"]),  # type: ignore[arg-type]
+        "</ActivoCrediticio>",
+        static_activo_financiero,
+        "</solicitud></rule:entryPointAdmonCarteraV2></soapenv:Body></soapenv:Envelope>",
+    ]
+    return "".join(xml)
+
+
+def write_static_catalogs(cns: list[dict[str, object]]) -> None:
+    cn_fields = ["cnCod", "cnNombre", "cnEstado", "cnRegion", "cnMunicipio", "cnDepartamento", "abfCount"]
+    with (BASE / "00_catalogos" / "cn_catalog.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=cn_fields)
+        writer.writeheader()
+        for item in cns:
+            writer.writerow(
+                {
+                    "cnCod": item["cod"],
+                    "cnNombre": item["nombre"],
+                    "cnEstado": item["estado"],
+                    "cnRegion": item["region"],
+                    "cnMunicipio": item["municipio"],
+                    "cnDepartamento": item["departamento"],
+                    "abfCount": len(item["abfs"]),  # type: ignore[arg-type]
+                }
+            )
+
+    with (BASE / "00_catalogos" / "patrono_catalog.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["patronoCod", "patronoNombre"])
+        writer.writeheader()
+        for idx in range(1, 5):
+            writer.writerow({"patronoCod": f"P{idx:03d}", "patronoNombre": f"patrono{idx}"})
+
+
+def main() -> int:
+    start = time.time()
+    catalog = load_catalog()
+    cns = build_static_catalog()
+    cns_by_code = by_code(cns)
+    static_activo_financiero = "<ActivoFinanciero>" + "".join(centro_xml(item) for item in cns) + "</ActivoFinanciero>"
+    static_hash = hashlib.sha256(static_activo_financiero.encode("utf-8")).hexdigest()
+
+    for path in [BASE / "00_catalogos", BASE / "01_manifest", FLAT_DIR, BASE / "03_expected", VALIDATION_DIR]:
+        path.mkdir(parents=True, exist_ok=True)
+    for stale in FLAT_DIR.glob("*.xml"):
+        stale.unlink()
+    write_static_catalogs(cns)
+
+    manifest_fields = [
+        "case_id",
+        "expanded_route_id",
+        "base_route_id",
+        "source_tree",
+        "case_number",
+        "global_case_number",
+        "seed",
+        "route_depth",
+        "final_rule",
+        "final_output_class_id",
+        "expected_mode",
+        "input_xml_path",
+        "input_xml_flat_path",
+        "expected_output_path",
+        "tree_version",
+        "mapping_version",
+        "generator_version",
+    ]
+    expected_fields = [
+        "case_id",
+        "expanded_route_id",
+        "base_route_id",
+        "source_tree",
+        "expected_mode",
+        "final_output_class_id",
+        "codCliente",
+        "dpiCliente",
+        "codCnActual",
+        "codAbfActual1",
+        "codAbfActual2",
+        "codAbfActual3",
+        "codAbfActual4",
+        "codCnAnterior",
+        "codAbfAnterior",
+        "bolson",
+        "expected_control_tree",
+        "expected_description",
+        "is_random_selection",
+        "tipo_cliente_expected",
+    ]
+    random_fields = [
+        "case_id",
+        "expanded_route_id",
+        "input_xml_path",
+        "expected_mode",
+        "codCnActual",
+        "codAbfActual1",
+        "codAbfActual2",
+        "codAbfActual3",
+        "codAbfActual4",
+    ]
+
+    counts = Counter()
+    mode_counts = Counter()
+    tree_counts = Counter()
+    route_counts = Counter()
+    random_rows: list[dict[str, str]] = []
+    first_xml = ""
+    manifest_rows: list[dict[str, str]] = []
+    expected_rows: list[dict[str, str]] = []
+
+    global_number = 0
+    for route in catalog:
+        for case_number in range(1, CASES_PER_ROUTE + 1):
+            global_number += 1
+            ctx = scenario(route, case_number, global_number, cns_by_code)
+            case_id = str(ctx["case_id"])
+            xml_name = f"{case_id}.xml"
+            rel_xml = f"02_inputs_xml_flat/{xml_name}"
+            xml = build_xml(ctx, static_activo_financiero)
+            (FLAT_DIR / xml_name).write_text(xml, encoding="utf-8")
+            if not first_xml:
+                first_xml = xml
+
+            expected_abfs = list(ctx["codAbfsActuales"])  # type: ignore[arg-type]
+            expected_row = {
+                "case_id": case_id,
+                "expanded_route_id": route["expanded_route_id"],
+                "base_route_id": route["base_route_id"],
+                "source_tree": route["source_tree"],
+                "expected_mode": str(ctx["expected_mode"]),
+                "final_output_class_id": route["final_output_class_id"],
+                "codCliente": str(ctx["codCliente"]),
+                "dpiCliente": str(ctx["dpiCliente"]),
+                "codCnActual": str(ctx["codCnActual"]),
+                "codCnAnterior": str(ctx["codCnAnterior"]),
+                "codAbfAnterior": str(ctx["codAbfAnterior"]),
+                "bolson": str(ctx["bolson"]),
+                "expected_control_tree": str(ctx["expected_control_tree"]),
+                "expected_description": str(ctx["expected_description"]),
+                "is_random_selection": str(ctx["is_random_selection"]),
+                "tipo_cliente_expected": str(ctx["tipo_cliente_expected"]),
+            }
+            for idx in range(MAX_ABF_SLOTS):
+                expected_row[f"codAbfActual{idx + 1}"] = expected_abfs[idx] if idx < len(expected_abfs) else ""
+            expected_rows.append(expected_row)
+
+            manifest_rows.append(
+                {
+                    "case_id": case_id,
+                    "expanded_route_id": route["expanded_route_id"],
+                    "base_route_id": route["base_route_id"],
+                    "source_tree": route["source_tree"],
+                    "case_number": str(case_number),
+                    "global_case_number": str(global_number),
+                    "seed": str(ctx["seed"]),
+                    "route_depth": route["route_depth"],
+                    "final_rule": route["final_rule"],
+                    "final_output_class_id": route["final_output_class_id"],
+                    "expected_mode": str(ctx["expected_mode"]),
+                    "input_xml_path": rel_xml,
+                    "input_xml_flat_path": rel_xml,
+                    "expected_output_path": "03_expected/expected_outputs.csv",
+                    "tree_version": TREE_VERSION,
+                    "mapping_version": MAPPING_VERSION,
+                    "generator_version": RUN_VERSION,
+                }
+            )
+
+            if str(ctx["is_random_selection"]) == "Si":
+                random_rows.append({field: expected_row.get(field, "") for field in random_fields} | {"input_xml_path": rel_xml})
+
+            counts["total"] += 1
+            route_counts[route["expanded_route_id"]] += 1
+            mode_counts[str(ctx["expected_mode"])] += 1
+            tree_counts[str(ctx["expected_control_tree"])] += 1
+
+    with MANIFEST.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=manifest_fields)
+        writer.writeheader()
+        writer.writerows(manifest_rows)
+    with EXPECTED.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=expected_fields)
+        writer.writeheader()
+        writer.writerows(expected_rows)
+
+    with (VALIDATION_DIR / "random_case_id.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=random_fields)
+        writer.writeheader()
+        writer.writerows(random_rows)
+    with (VALIDATION_DIR / "random_candidates.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=[*random_fields, "candidate_valid_flag", "candidate_selected_flag_after_blaze"])
+        writer.writeheader()
+        for row in random_rows:
+            writer.writerow(row | {"candidate_valid_flag": "Si", "candidate_selected_flag_after_blaze": ""})
+    with (VALIDATION_DIR / "random_response_template.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["case_id", "expanded_route_id", "input_xml_path", "actual_cod_cn_actual", "actual_cod_abf_actual"],
+        )
+        writer.writeheader()
+        for row in random_rows:
+            writer.writerow(
+                {
+                    "case_id": row["case_id"],
+                    "expanded_route_id": row["expanded_route_id"],
+                    "input_xml_path": row["input_xml_path"],
+                    "actual_cod_cn_actual": "",
+                    "actual_cod_abf_actual": "",
+                }
+            )
+    with (VALIDATION_DIR / "route_generation_summary.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["expanded_route_id", "generated_cases"])
+        writer.writeheader()
+        for route_id, count in sorted(route_counts.items()):
+            writer.writerow({"expanded_route_id": route_id, "generated_cases": count})
+
+    if first_xml:
+        (VALIDATION_DIR / "sample_input_bt.xml").write_text(first_xml, encoding="utf-8")
+        (VALIDATION_DIR / "first_xml_preview.txt").write_text(first_xml[:12000], encoding="utf-8")
+
+    summary = {
+        "artifact": "QA BT",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "generator_version": RUN_VERSION,
+        "tree_version": TREE_VERSION,
+        "cases_per_route": CASES_PER_ROUTE,
+        "expanded_routes_generated": len(route_counts),
+        "total_xml_inputs_generated": counts["total"],
+        "flat_xml_folder": "02_inputs_xml_flat",
+        "flat_xml_count": len(list(FLAT_DIR.glob("*.xml"))),
+        "manifest": str(MANIFEST),
+        "expected_outputs": str(EXPECTED),
+        "expected_mode_counts": dict(mode_counts),
+        "expected_control_tree_counts": dict(tree_counts),
+        "random_cases_generated": len(random_rows),
+        "static_cn_catalog_count": len(cns),
+        "static_abf_total": sum(len(item["abfs"]) for item in cns),  # type: ignore[arg-type]
+        "activo_financiero_static_hash": static_hash,
+        "duration_seconds": round(time.time() - start, 2),
+        "notes": [
+            "Todos los XML de entrada se escriben únicamente en 02_inputs_xml_flat.",
+            "No se crea 02_inputs_xml ni carpetas por regla/ruta.",
+            "Las rutas de Regla no. 1 usan codAbfActual1..4 para representar salidas determinísticas o conjuntos aceptados.",
+        ],
+    }
+    (VALIDATION_DIR / "generation_summary.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

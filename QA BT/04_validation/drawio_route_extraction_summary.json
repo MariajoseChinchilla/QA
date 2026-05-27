@@ -1,0 +1,25 @@
+{
+  "drawio_file": "C:\\Users\\Mariajose\\Desktop\\qa100\\QA\\QA BT\\00_catalogos\\Motor_BT.drawio.xml",
+  "generated_at_utc": "2026-05-27T18:36:56.863982Z",
+  "pages": {
+    "Primera asignación": 9,
+    "General_post_primera_asignacion": 15,
+    "Regla no. 1": 7,
+    "Regla no. 2": 23,
+    "Regla no. 3": 9
+  },
+  "edge_count": 58,
+  "page_route_counts": {
+    "Primera asignación": 5,
+    "General_post_primera_asignacion": 8,
+    "Regla no. 1": 4,
+    "Regla no. 2": 12,
+    "Regla no. 3": 5
+  },
+  "expanded_route_count": 82,
+  "catalog": "C:\\Users\\Mariajose\\Desktop\\qa100\\QA\\QA BT\\00_catalogos\\catalogo_rutas_arbol_bt_expandido.csv",
+  "notes": [
+    "Las rutas que delegan a Regla no. 1 se expanden con las cuatro salidas de esa regla.",
+    "Las rutas que delegan a Regla no. 2 o Regla no. 3 se expanden hasta su salida final."
+  ]
+}

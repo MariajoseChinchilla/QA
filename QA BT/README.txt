@@ -1,0 +1,31 @@
+Paquete QA Blaze - Banca Trabajadores
+
+Contenido principal:
+- 00_catalogos/: draw.io fuente, catalogo de rutas BT expandido, nodos/aristas del arbol y catalogos auxiliares.
+- 01_manifest/case_manifest_100_bt.csv: manifest reproducible con 8,200 casos.
+- 02_inputs_xml_flat/: todos los XMLs juntos en una sola carpeta.
+- 03_expected/expected_outputs.csv: salidas esperadas por case_id.
+- 04_validation/: reportes y resumenes de generacion/validacion.
+- 05_scripts/: scripts reproducibles.
+- docs/: notas de trabajo.
+
+Resumen de la version actual:
+- Fuente del arbol: 00_catalogos/Motor_BT.drawio.xml.
+- Extractor: extract_bt_routes_from_drawio.py.
+- Generador: XML_INPUT_GENERATOR_BT_FLAT_V1_2026_05_27.
+- Rutas expandidas: 82.
+- Casos por ruta: 100.
+- XMLs totales: 8,200.
+- XMLs en carpeta plana: 8,200.
+
+Nota de estructura:
+- Esta variante BT no crea 02_inputs_xml ni subcarpetas por regla/ruta.
+- La unica carpeta de entradas es 02_inputs_xml_flat.
+
+Validacion ejecutada:
+- Extraccion del draw.io: PASS.
+- Generacion de manifest/expected/XMLs: PASS.
+- Estructura plana: PASS.
+- Manifest vs expected vs XMLs: PASS.
+- XML well-formed: PASS.
+- Validacion de banca de credito BT/PED: PASS.

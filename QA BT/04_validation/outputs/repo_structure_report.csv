@@ -1,0 +1,11 @@
+check,status,severity,expected,found,message
+required_dir:00_catalogos,PASS,INFO,,,Directorio requerido presente.
+required_dir:01_manifest,PASS,INFO,,,Directorio requerido presente.
+required_dir:02_inputs_xml_flat,PASS,INFO,,,Directorio requerido presente.
+required_dir:03_expected,PASS,INFO,,,Directorio requerido presente.
+required_dir:04_validation,PASS,INFO,,,Directorio requerido presente.
+required_dir:05_scripts,PASS,INFO,,,Directorio requerido presente.
+required_dir:docs,PASS,INFO,,,Directorio requerido presente.
+forbidden_dir:02_inputs_xml,PASS,INFO,,,No existe carpeta separada por reglas.
+manifest_vs_expected,PASS,INFO,8200,8200,Manifest y expected tienen el mismo número de filas.
+manifest_vs_flat_xml,PASS,INFO,8200,8200,La carpeta plana contiene un XML por caso.
