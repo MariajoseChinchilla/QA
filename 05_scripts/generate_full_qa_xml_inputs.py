@@ -25,7 +25,7 @@ CATALOG = BASE / 'catalogo_rutas_arbol_expandido_general_post_full_with_bt_contr
 FIELD_CONTRACT = BASE / 'field_contract_arbol_expandido_general_post_primera_asignacion.csv'
 SCENARIOS = BASE / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 OUT_ROOT = BASE / 'qa_inputs_arbol_expandido_general_post_full_bt'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V14_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_02'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V15_FLAT_ONLY_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_03'
 RUN_DATE = '2026-05-13'
 FLAT_XML_DIR = '02_inputs_xml_flat'
 MAX_EXPECTED_ABF_SLOTS = 4
@@ -261,7 +261,7 @@ def build_context(man: dict, route: dict) -> dict:
             credito_tipo = 'NUEVO'
 
     credito_banca = 'BANCA_PERSONAS' if client_is_bp else 'BANCA_TRABAJADORES'
-    tipo_cliente = 'CE' if existing else ('CR' if gen_dec.get('D03') == 'SI' else 'CN')
+    tipo_cliente = 'CE' if existing else 'CR'
     credito_estado_base = 'VIGENTE' if existing else 'CANCELADO'
 
     # Edad: R1 usa cercanía de edad.
@@ -821,7 +821,6 @@ def prepare_output_root() -> None:
         shutil.rmtree(OUT_ROOT)
     (OUT_ROOT / '00_catalogos').mkdir(parents=True)
     (OUT_ROOT / '01_manifest').mkdir(parents=True)
-    (OUT_ROOT / '02_inputs_xml').mkdir(parents=True)
     (OUT_ROOT / FLAT_XML_DIR).mkdir(parents=True)
     (OUT_ROOT / '03_expected').mkdir(parents=True)
     (OUT_ROOT / '04_validation').mkdir(parents=True)
@@ -835,7 +834,7 @@ def prepare_output_root() -> None:
 
 
 def write_readme(summary: dict | None = None) -> None:
-    text = f"""Paquete QA Blaze - arbol expandido General_post_primera_asignacion\n\nGenerado: {datetime.utcnow().isoformat()}Z\nVersion generador: {RUN_VERSION}\n\nContenido:\n- 00_catalogos/: catalogo de rutas, contrato de campos y constraints usados para generar los casos.\n- 01_manifest/: manifest full con 222,000 casos.\n- 02_inputs_xml/: XMLs de entrada para ejecutar contra Blaze.\n- 03_expected/: expected_outputs.csv con la salida esperada por case_id.\n- 04_validation/: reportes de validacion de generacion, incluyendo control BT.\n- 05_scripts/: script reproducible de generacion.\n\nNota importante:\nLos XMLs usan la estructura SOAP vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito. Se agregan clienteGenero y asignadoGenero, y los valores alfanumericos se serializan en mayuscula.\n\nAclaracion de negocio incorporada:\n- labor = persona que desembolso el credito; campos participanteLabor*.\n- asignacion = a quien pertenece actualmente el cliente; campos clienteEsCarteraDel*, asignado*.\n- cosecha = CN donde se desembolso el credito; campos cosecha* en el XML. Puede diferir de participanteLaborCn.\n"""
+    text = f"""Paquete QA Blaze - arbol expandido General_post_primera_asignacion\n\nGenerado: {datetime.utcnow().isoformat()}Z\nVersion generador: {RUN_VERSION}\n\nContenido:\n- 00_catalogos/: catalogo de rutas, contrato de campos y constraints usados para generar los casos.\n- 01_manifest/: manifest full con 222,000 casos.\n- 02_inputs_xml_flat/: XMLs de entrada para ejecutar contra Blaze en una unica carpeta.\n- 03_expected/: expected_outputs.csv con la salida esperada por case_id.\n- 04_validation/: reportes de validacion de generacion, incluyendo control BT.\n- 05_scripts/: script reproducible de generacion.\n\nNota importante:\nLos XMLs usan la estructura SOAP vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito. Se agregan clienteGenero y asignadoGenero, y los valores alfanumericos se serializan en mayuscula.\n\nAclaracion de negocio incorporada:\n- labor = persona que desembolso el credito; campos participanteLabor*.\n- asignacion = a quien pertenece actualmente el cliente; campos clienteEsCarteraDel*, asignado*.\n- cosecha = CN donde se desembolso el credito; campos cosecha* en el XML. Puede diferir de participanteLaborCn.\n"""
     if summary:
         text += "\nResumen de generación:\n" + json.dumps(summary, ensure_ascii=False, indent=2) + "\n"
     (OUT_ROOT / 'README.txt').write_text(text, encoding='utf-8')
@@ -884,11 +883,10 @@ def main(limit: int | None = None) -> None:
             xml = build_xml(ctx, cns, creditos)
             expected = build_expected(ctx)
 
-            rel_path = Path(man['input_xml_path'])
+            rel_path = Path(FLAT_XML_DIR) / f"{ctx['case_id']}.xml"
             out_path = OUT_ROOT / rel_path
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(xml, encoding='utf-8')
-            ensure_hardlink(out_path, OUT_ROOT / FLAT_XML_DIR / f"{ctx['case_id']}.xml")
 
             expected_row = expected_row_for_csv(expected)
             exp_writer.writerow({k: expected_row.get(k, '') for k in expected_fields})
@@ -905,7 +903,7 @@ def main(limit: int | None = None) -> None:
                 bt_pass += 1 if pass_bt else 0
                 bt_writer.writerow({
                     'case_id': ctx['case_id'],
-                    'input_xml_path': man['input_xml_path'],
+                    'input_xml_path': rel_path.as_posix(),
                     'credito_banca_values': '|'.join(credito_bancas),
                     'abf_sugerido_banca': abf_sug_banca,
                     'expected_control_tree': expected['expected_control_tree'],
@@ -916,7 +914,7 @@ def main(limit: int | None = None) -> None:
                 'expanded_route_id': ctx['expanded_route_id'],
                 'general_route_id': ctx['general_route_id'],
                 'final_output_class_id': ctx['final_output_class_id'],
-                'input_xml_path': man['input_xml_path'],
+                'input_xml_path': rel_path.as_posix(),
                 'xml_generated': 'SI',
                 'expected_generated': 'SI',
                 'bt_control_case': 'SI' if is_bt else 'NO',
@@ -940,9 +938,7 @@ def main(limit: int | None = None) -> None:
     # Primeros 20 generados + 20 BT si existen.
     for p in generated_paths_sample:
         sample_files.append(OUT_ROOT / p)
-    bt_dir = OUT_ROOT / '02_inputs_xml' / 'GPA-038__CONTROL_BT'
-    if bt_dir.exists():
-        sample_files.extend(sorted(bt_dir.glob('*.xml'))[:20])
+    sample_files.extend(sorted((OUT_ROOT / FLAT_XML_DIR).glob('GPA-038__CONTROL_BT__*.xml'))[:20])
     for p in sample_files:
         try:
             ET.parse(p)

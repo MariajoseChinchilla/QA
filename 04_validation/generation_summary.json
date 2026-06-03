@@ -1,9 +1,9 @@
 {
   "artifact": "qa100",
-  "output_root": "C:\\Users\\Mariajose\\Desktop\\qa100\\QA",
-  "generated_at_utc": "2026-05-15T22:30:00.141185Z",
-  "generator_version": "XML_INPUT_GENERATOR_V13_QA1000_WIDE_RANDOM_2026_05_15",
-  "duration_seconds": 1221.0,
+  "output_root": "C:\\Users\\Mariajose\\Desktop\\QA",
+  "generated_at_utc": "2026-06-03T19:14:34.371367Z",
+  "generator_version": "XML_INPUT_GENERATOR_V15_FLAT_ONLY_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_03",
+  "duration_seconds": 807.01,
   "cases_per_route": 1000,
   "total_xml_inputs_generated": 222000,
   "expanded_routes_generated": 222,
@@ -21,7 +21,7 @@
   "random_routes_generated": 98,
   "static_cn_catalog_count": 103,
   "static_abf_total": 412,
-  "activo_financiero_static_hash": "4c024a9b778660c9ef332a0d4bbe621cd761929a41f3f10b9bcc716c69145d8c",
+  "activo_financiero_static_hash": "7485d16d06dcc644d0261ba465864e75d02e5e6b982949e6d398d3e2a8f56980",
   "domain_validation_failed_sampled_cases": 0,
   "cn_count_distribution": {
     "103": 222000
@@ -125,8 +125,11 @@
   "notes": [
     "Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.",
     "Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.",
+    "Estructura XML vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito.",
+    "Se agregan clienteGenero y asignadoGenero; como PED no depende de genero, se asignan de forma deterministica pseudoaleatoria.",
+    "Los valores alfanumericos del XML se serializan en mayuscula sin cambiar nombres de etiquetas.",
     "Las salidas aleatorias se consolidan en una fila por cliente con columnas codAbfActual1..N; codCnActual permanece unico.",
-    "La carpeta 02_inputs_xml_flat contiene todos los XMLs juntos como enlaces duros hacia los XMLs por ruta para evitar duplicar espacio.",
+    "Solo se genera la carpeta 02_inputs_xml_flat con todos los XMLs juntos; no se conserva 02_inputs_xml por ruta.",
     "Alinea General post primera asignacion: ABF asignado en baja para D06, asesor asignado para D25, baja temporal D16/D34 y CN de cosecha por region/ruta."
   ]
 }

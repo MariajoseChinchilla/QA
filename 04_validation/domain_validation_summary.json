@@ -4,111 +4,119 @@
   "domain_failure_samples": [],
   "domain_values_observed": {
     "creditoEstado": {
-      "C": 184,
-      "D": 253
+      "C": 242,
+      "D": 346
     },
     "creditoBanca": {
-      "banca_personas": 436,
-      "banca_trabajadores": 1
+      "BANCA_PERSONAS": 586,
+      "BANCA_TRABAJADORES": 2
     },
     "creditoTipoCliente": {
-      "CR": 184,
-      "CE": 253
+      "CR": 242,
+      "CE": 346
     },
     "creditoRegion": {
-      "Nor_oriente": 230,
-      "Metropolitana": 207
+      "NOR_ORIENTE": 381,
+      "METROPOLITANA": 207
     },
     "participanteLaborEstado": {
-      "Alta": 434,
-      "Baja": 3
+      "ALTA": 585,
+      "BAJA": 3
     },
     "participanteLaborBanca": {
-      "banca_personas": 434,
-      "banca_trabajadores": 3
+      "BANCA_PERSONAS": 584,
+      "BANCA_TRABAJADORES": 4
     },
     "participanteLaborRegion": {
-      "Nor_oriente": 229,
-      "Metropolitana": 205,
-      "Sur_occidente": 3
+      "NOR_ORIENTE": 380,
+      "METROPOLITANA": 205,
+      "SUR_OCCIDENTE": 3
     },
     "participanteLaborVacacion": {
-      "0": 437
+      "0": 588
     },
     "participanteLaborTipo": {
-      "abf": 329,
-      "cn": 12,
-      "cp": 96
+      "ABF": 480,
+      "CN": 12,
+      "CP": 96
     },
     "clienteRegion": {
-      "Nor_oriente": 149,
-      "Metropolitana": 123
+      "NOR_ORIENTE": 149,
+      "METROPOLITANA": 123
     },
     "clienteEsSugerido": {
-      "No": 269,
-      "Si": 3
+      "NO": 269,
+      "SI": 3
     },
     "clienteEstabaAsignadoAbf": {
-      "No": 129,
-      "Si": 143
+      "NO": 129,
+      "SI": 143
     },
     "clienteFueDesembolsadoEnElUltimoMes": {
-      "No": 147,
-      "Si": 125
+      "NO": 147,
+      "SI": 125
+    },
+    "clienteGenero": {
+      "MASCULINO": 141,
+      "FEMENINO": 131
     },
     "cnEstado": {
-      "Alta": 27744,
-      "Baja": 272
+      "ALTA": 27744,
+      "BAJA": 272
     },
     "cnRegion": {
-      "Nor_oriente": 13872,
-      "Metropolitana": 13872,
-      "Sur_occidente": 272
+      "NOR_ORIENTE": 13872,
+      "METROPOLITANA": 13872,
+      "SUR_OCCIDENTE": 272
     },
     "asignadoEstado": {
-      "Alta": 82416,
-      "Baja": 29648
+      "ALTA": 82416,
+      "BAJA": 29648
     },
     "asignadoEnVacacion": {
       "0": 111792,
       "1": 272
     },
     "asignadoBanca": {
-      "banca_personas": 109344,
-      "banca_trabajadores": 2720
+      "BANCA_PERSONAS": 109344,
+      "BANCA_TRABAJADORES": 2720
+    },
+    "asignadoGenero": {
+      "FEMENINO": 58752,
+      "MASCULINO": 53312
     },
     "asignadoBolsonEstado": {
-      "Equilibrio": 58752,
-      "Exceso": 20400,
-      "Deficit": 32912
+      "EQUILIBRIO": 58752,
+      "EXCESO": 20400,
+      "DEFICIT": 32912
     },
     "abfSugeridoEstado": {
       "": 269,
-      "Alta": 3
+      "ALTA": 3
     },
     "abfSugeridoBanca": {
       "": 269,
-      "banca_personas": 3
+      "BANCA_PERSONAS": 3
     },
     "abfSugeridoRegion": {
       "": 269,
-      "Nor_oriente": 3
+      "NOR_ORIENTE": 3
     },
     "abfSugeridoOportunidad": {
       "": 269,
-      "Sugerido": 3
+      "SUGERIDO": 3
     },
-    "esTrabajadorInterno": {
+    "clienteesTrabajadorBt": {
       "N": 272
     },
-    "cnCosechaEstado": {
-      "Alta": 421,
-      "Baja": 16
+    "cosechaEstadoCn": {
+      "ALTA": 438,
+      "BAJA": 150
     },
-    "cnCosechaRegion": {
-      "Nor_oriente": 237,
-      "Sur_occidente": 2,
-      "Metropolitana": 198
+    "cosechaRegionCn": {
+      "NOR_ORIENTE": 388,
+      "SUR_OCCIDENTE": 2,
+      "METROPOLITANA": 198
     }
   },
   "domain_rules": {
@@ -117,8 +125,8 @@
       "D"
     ],
     "creditoBanca": [
-      "banca_personas",
-      "banca_trabajadores"
+      "BANCA_PERSONAS",
+      "BANCA_TRABAJADORES"
     ],
     "creditoTipoCliente": [
       "CE",
@@ -126,104 +134,112 @@
       "CR"
     ],
     "creditoRegion": [
-      "Metropolitana",
-      "Nor_oriente",
-      "Sur_occidente"
+      "METROPOLITANA",
+      "NOR_ORIENTE",
+      "SUR_OCCIDENTE"
     ],
     "participanteLaborEstado": [
-      "Alta",
-      "Baja"
+      "ALTA",
+      "BAJA"
     ],
     "participanteLaborBanca": [
-      "banca_personas",
-      "banca_trabajadores"
+      "BANCA_PERSONAS",
+      "BANCA_TRABAJADORES"
     ],
     "participanteLaborRegion": [
-      "Metropolitana",
-      "Nor_oriente",
-      "Sur_occidente"
+      "METROPOLITANA",
+      "NOR_ORIENTE",
+      "SUR_OCCIDENTE"
     ],
     "participanteLaborVacacion": [
       "0",
       "1"
     ],
     "participanteLaborTipo": [
-      "abf",
-      "cn",
-      "cp"
+      "ABF",
+      "CN",
+      "CP"
     ],
     "clienteRegion": [
-      "Metropolitana",
-      "Nor_oriente",
-      "Sur_occidente"
+      "METROPOLITANA",
+      "NOR_ORIENTE",
+      "SUR_OCCIDENTE"
     ],
     "clienteEsSugerido": [
-      "No",
-      "Si"
+      "NO",
+      "SI"
     ],
     "clienteEstabaAsignadoAbf": [
-      "No",
-      "Si"
+      "NO",
+      "SI"
     ],
     "clienteFueDesembolsadoEnElUltimoMes": [
-      "No",
-      "Si"
+      "NO",
+      "SI"
+    ],
+    "clienteGenero": [
+      "FEMENINO",
+      "MASCULINO"
     ],
     "cnEstado": [
-      "Alta",
-      "Baja"
+      "ALTA",
+      "BAJA"
     ],
     "cnRegion": [
-      "Metropolitana",
-      "Nor_oriente",
-      "Sur_occidente"
+      "METROPOLITANA",
+      "NOR_ORIENTE",
+      "SUR_OCCIDENTE"
     ],
     "asignadoEstado": [
-      "Alta",
-      "Baja"
+      "ALTA",
+      "BAJA"
     ],
     "asignadoEnVacacion": [
       "0",
       "1"
     ],
     "asignadoBanca": [
-      "banca_personas",
-      "banca_trabajadores"
+      "BANCA_PERSONAS",
+      "BANCA_TRABAJADORES"
+    ],
+    "asignadoGenero": [
+      "FEMENINO",
+      "MASCULINO"
     ],
     "asignadoBolsonEstado": [
-      "Deficit",
-      "Equilibrio",
-      "Exceso"
+      "DEFICIT",
+      "EQUILIBRIO",
+      "EXCESO"
     ],
     "abfSugeridoEstado": [
-      "Alta",
-      "Baja"
+      "ALTA",
+      "BAJA"
     ],
     "abfSugeridoBanca": [
-      "banca_personas",
-      "banca_trabajadores"
+      "BANCA_PERSONAS",
+      "BANCA_TRABAJADORES"
     ],
     "abfSugeridoRegion": [
-      "Metropolitana",
-      "Nor_oriente",
-      "Sur_occidente"
+      "METROPOLITANA",
+      "NOR_ORIENTE",
+      "SUR_OCCIDENTE"
     ],
     "abfSugeridoOportunidad": [
-      "No_Sugerido",
-      "Sugerido"
+      "NO_SUGERIDO",
+      "SUGERIDO"
     ],
-    "esTrabajadorInterno": [
+    "clienteesTrabajadorBt": [
       "N",
       "S"
     ],
-    "cnCosechaEstado": [
-      "Alta",
-      "Baja"
+    "cosechaEstadoCn": [
+      "ALTA",
+      "BAJA"
     ],
-    "cnCosechaRegion": [
-      "Metropolitana",
-      "Nor_oriente",
-      "Sur_occidente"
+    "cosechaRegionCn": [
+      "METROPOLITANA",
+      "NOR_ORIENTE",
+      "SUR_OCCIDENTE"
     ]
   },
   "note": "Validacion muestral; campos abfSugerido* pueden ir en blanco cuando no existe ABF sugerido."
