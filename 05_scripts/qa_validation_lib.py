@@ -203,31 +203,36 @@ SCAN_REPORTS = {
 
 DOMAIN_ALLOWED = {
     "creditoEstado": {"V", "C", "D"},
-    "creditoBanca": {"banca_personas", "banca_trabajadores"},
+    "creditoBanca": {"BANCA_PERSONAS", "BANCA_TRABAJADORES"},
     "creditoTipoCliente": {"CN", "CE", "CR"},
-    "creditoRegion": {"Metropolitana", "Nor_oriente", "Sur_occidente"},
-    "participanteLaborEstado": {"Alta", "Baja"},
-    "participanteLaborBanca": {"banca_personas", "banca_trabajadores"},
+    "creditoRegion": {"METROPOLITANA", "NOR_ORIENTE", "SUR_OCCIDENTE"},
+    "participanteLaborEstado": {"ALTA", "BAJA"},
+    "participanteLaborBanca": {"BANCA_PERSONAS", "BANCA_TRABAJADORES"},
+    "participanteLaborRegion": {"METROPOLITANA", "NOR_ORIENTE", "SUR_OCCIDENTE"},
     "participanteLaborVacacion": {"0", "1"},
-    "participanteLaborTipo": {"abf", "cn", "cp"},
-    "clienteEsSugerido": {"Si", "No"},
-    "clienteEstabaAsignadoAbf": {"Si", "No"},
-    "clienteFueDesembolsadoEnElUltimoMes": {"Si", "No"},
+    "participanteLaborTipo": {"ABF", "CN", "CP"},
+    "clienteEsSugerido": {"SI", "NO"},
+    "clienteEstabaAsignadoAbf": {"SI", "NO"},
+    "clienteFueDesembolsadoEnElUltimoMes": {"SI", "NO"},
+    "clienteGenero": {"MASCULINO", "FEMENINO"},
+    "clienteesTrabajadorBt": {"S", "N"},
     "esTrabajadorInterno": {"S", "N"},
-    "cnEstado": {"Alta", "Baja"},
-    "cnRegion": {"Metropolitana", "Nor_oriente", "Sur_occidente"},
-    "asignadoEstado": {"Alta", "Baja"},
+    "cnEstado": {"ALTA", "BAJA"},
+    "cnRegion": {"METROPOLITANA", "NOR_ORIENTE", "SUR_OCCIDENTE"},
+    "asignadoEstado": {"ALTA", "BAJA"},
     "asignadoEnVacacion": {"0", "1"},
-    "asignadoBanca": {"banca_personas", "banca_trabajadores"},
-    "asignadoBolsonEstado": {"Exceso", "Equilibrio", "Deficit"},
-    "abfSugeridoOportunidad": {"Sugerido", "No_Sugerido"},
+    "asignadoBanca": {"BANCA_PERSONAS", "BANCA_TRABAJADORES"},
+    "asignadoGenero": {"MASCULINO", "FEMENINO"},
+    "asignadoBolsonEstado": {"EXCESO", "EQUILIBRIO", "DEFICIT"},
+    "abfSugeridoOportunidad": {"SUGERIDO", "NO_SUGERIDO"},
 }
 
 SOLICITUD_DOMAIN_FIELDS = [
     "clienteEsSugerido",
     "clienteEstabaAsignadoAbf",
     "clienteFueDesembolsadoEnElUltimoMes",
-    "esTrabajadorInterno",
+    "clienteGenero",
+    "clienteesTrabajadorBt",
     "abfSugeridoOportunidad",
 ]
 
@@ -238,6 +243,7 @@ CREDITO_DOMAIN_FIELDS = [
     "creditoRegion",
     "participanteLaborEstado",
     "participanteLaborBanca",
+    "participanteLaborRegion",
     "participanteLaborVacacion",
     "participanteLaborTipo",
 ]
@@ -247,6 +253,7 @@ ABF_DOMAIN_FIELDS = [
     "asignadoEstado",
     "asignadoEnVacacion",
     "asignadoBanca",
+    "asignadoGenero",
     "asignadoBolsonEstado",
 ]
 
@@ -263,7 +270,7 @@ UNKNOWN_MUNICIPIO = {
 }
 
 SENTINEL_EMPTY = {"", "-1", "NA", "N/A", "NONE", "NULL"}
-ACTIVO_FINANCIERO_RE = re.compile(br"<ActivoFinanciero\b[^>]*>.*?</ActivoFinanciero>", re.DOTALL)
+ACTIVO_FINANCIERO_RE = re.compile(br"<activoFinanciero\b[^>]*>.*?</activoFinanciero>", re.DOTALL | re.IGNORECASE)
 ACCEPTED_SET_MODES = {"ACCEPTED_SET", "ACCEPTED_SET_OR_DETERMINISTIC_SINGLETON"}
 EXACT_LIKE_MODES = {"EXACT", "EXACT_OR_BUSINESS_ASSERTION"}
 
@@ -274,10 +281,18 @@ def clean(value: Any) -> str:
     return str(value).strip()
 
 
+def clean_upper(value: Any) -> str:
+    return clean(value).upper()
+
+
 def local_name(tag: str) -> str:
     if "}" in tag:
         return tag.rsplit("}", 1)[1]
     return tag
+
+
+def same_tag(actual: str, expected: str) -> bool:
+    return local_name(actual).lower() == expected.lower()
 
 
 def direct_children(elem: ET.Element | None, name: str | None = None) -> list[ET.Element]:
@@ -286,12 +301,12 @@ def direct_children(elem: ET.Element | None, name: str | None = None) -> list[ET
     children = list(elem)
     if name is None:
         return children
-    return [child for child in children if local_name(child.tag) == name]
+    return [child for child in children if same_tag(child.tag, name)]
 
 
 def direct_child(elem: ET.Element | None, name: str) -> ET.Element | None:
     for child in direct_children(elem):
-        if local_name(child.tag) == name:
+        if same_tag(child.tag, name):
             return child
     return None
 
@@ -299,10 +314,10 @@ def direct_child(elem: ET.Element | None, name: str) -> ET.Element | None:
 def find_first(elem: ET.Element | None, name: str) -> ET.Element | None:
     if elem is None:
         return None
-    if local_name(elem.tag) == name:
+    if same_tag(elem.tag, name):
         return elem
     for child in elem.iter():
-        if local_name(child.tag) == name:
+        if same_tag(child.tag, name):
             return child
     return None
 
@@ -321,6 +336,21 @@ def direct_dict(elem: ET.Element | None) -> dict[str, str]:
     for child in direct_children(elem):
         if len(list(child)) == 0:
             data[local_name(child.tag)] = clean(child.text)
+    return data
+
+
+def normalize_credito_fields(data: dict[str, str]) -> dict[str, str]:
+    aliases = {
+        "cosechaCodigoCn": "cnCosechaCod",
+        "cosechaNombreCn": "cnCosechaNombre",
+        "cosechaEstadoCn": "cnCosechaEstado",
+        "cosechaRegionCn": "cnCosechaRegion",
+        "cosechaDepartamentoCn": "cnCosechaDepartamento",
+        "cosechaMunicipioCn": "cnCosechaMunicipio",
+    }
+    for new_name, legacy_name in aliases.items():
+        if new_name in data and legacy_name not in data:
+            data[legacy_name] = data[new_name]
     return data
 
 
@@ -414,13 +444,13 @@ def municipio_known(value: str) -> bool:
 def abf_especialista_en_patrono(abf: dict[str, str] | None, patrono_cliente: str) -> bool:
     if not abf:
         return False
-    patrono = clean(patrono_cliente)
+    patrono = clean(patrono_cliente).upper()
     if not patrono or patrono in SENTINEL_EMPTY:
         return False
     values = {
-        clean(abf.get("especialistaPatrono1")),
-        clean(abf.get("especialistaPatrono2")),
-        clean(abf.get("especialistaPatrono3")),
+        clean(abf.get("especialistaPatrono1")).upper(),
+        clean(abf.get("especialistaPatrono2")).upper(),
+        clean(abf.get("especialistaPatrono3")).upper(),
     }
     values = {value for value in values if value not in SENTINEL_EMPTY}
     return patrono in values
@@ -428,14 +458,14 @@ def abf_especialista_en_patrono(abf: dict[str, str] | None, patrono_cliente: str
 
 def normalize_activo_financiero(activo: ET.Element) -> str:
     centros = []
-    for cn in direct_children(activo, "CentroDeNegocio"):
+    for cn in direct_children(activo, "centroDeNegocio"):
         cn_fields = {
             local_name(child.tag): clean(child.text)
             for child in direct_children(cn)
-            if local_name(child.tag) != "Abf"
+            if not same_tag(child.tag, "abf")
         }
         abfs = []
-        for abf in direct_children(cn, "Abf"):
+        for abf in direct_children(cn, "abf"):
             abfs.append(
                 {
                     local_name(child.tag): clean(child.text)
@@ -502,20 +532,20 @@ def parse_xml_fact(
     fact.has_envelope = local_name(root.tag) == "Envelope"
     body = direct_child(root, "Body")
     fact.has_body = body is not None
-    solicitud = find_first(root, "solicitud")
+    solicitud = find_first(root, "arg0") or find_first(root, "solicitud")
     fact.has_solicitud = solicitud is not None
 
     if solicitud is None:
         return fact
 
     fact.cliente_fields = direct_dict(solicitud)
-    activo_crediticio = direct_child(solicitud, "ActivoCrediticio")
-    activo_financiero = direct_child(solicitud, "ActivoFinanciero")
+    activo_crediticio = direct_child(solicitud, "activoCrediticio")
+    activo_financiero = direct_child(solicitud, "activoFinanciero")
     fact.has_activo_crediticio = activo_crediticio is not None
     fact.has_activo_financiero = activo_financiero is not None
 
-    for credito in direct_children(activo_crediticio, "Credito"):
-        fact.creditos.append(direct_dict(credito))
+    for credito in direct_children(activo_crediticio, "credito"):
+        fact.creditos.append(normalize_credito_fields(direct_dict(credito)))
 
     if activo_financiero is not None:
         match = ACTIVO_FINANCIERO_RE.search(xml_bytes)
@@ -527,7 +557,7 @@ def parse_xml_fact(
             raw_to_normalized_hash[raw_hash] = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
         fact.normalized_activo_hash = raw_to_normalized_hash[raw_hash]
 
-        for cn in direct_children(activo_financiero, "CentroDeNegocio"):
+        for cn in direct_children(activo_financiero, "centroDeNegocio"):
             fact.cn_count += 1
             cn_data = direct_dict(cn)
             cn_cod = clean(cn_data.get("cnCod"))
@@ -535,14 +565,14 @@ def parse_xml_fact(
             fact.cn_regions[cn_cod] = clean(cn_data.get("cnRegion"))
             fact.cn_municipios[cn_cod] = clean(cn_data.get("cnMunicipio"))
             fact.cn_departamentos[cn_cod] = clean(cn_data.get("cnDepartamento"))
-            for abf in direct_children(cn, "Abf"):
+            for abf in direct_children(cn, "abf"):
                 fact.abf_count += 1
                 abf_data = direct_dict(abf)
                 abf_cod = clean(abf_data.get("asignadoCod"))
                 if cn_cod and abf_cod:
                     fact.abfs[(cn_cod, abf_cod)] = abf_data
                 for field in ("especialistaPatrono1", "especialistaPatrono2", "especialistaPatrono3"):
-                    value = clean(abf_data.get(field))
+                    value = clean(abf_data.get(field)).upper()
                     if value not in SENTINEL_EMPTY and patrono_catalog and value not in patrono_catalog:
                         fact.invalid_specialist_values.add(value)
 
@@ -594,9 +624,9 @@ def has_desembolso_en_municipio(fact: XMLFact, municipio_objetivo: str) -> tuple
         cn_cod = clean(credito.get("cnCosechaCod"))
         if clean(credito.get("cnCosechaMunicipio")) != municipio:
             continue
-        if clean(credito.get("cnCosechaEstado")) != "Alta":
+        if clean_upper(credito.get("cnCosechaEstado")) != "ALTA":
             continue
-        if fact.cn_states.get(cn_cod) == "Alta":
+        if clean_upper(fact.cn_states.get(cn_cod)) == "ALTA":
             return True, cn_cod
     return False, ""
 
@@ -701,7 +731,7 @@ class QAValidator:
 
         patrono_rows = read_csv_rows(self.root / PATHS["patrono_catalog"])
         self.patrono_catalog = {
-            clean(row.get("patronoNombre"))
+            clean(row.get("patronoNombre")).upper()
             for row in patrono_rows
             if clean(row.get("patronoNombre"))
         }
@@ -1386,7 +1416,8 @@ class QAValidator:
         status = "PASS"
         severity = "INFO"
         messages = []
-        patrono_in_catalog = (not patrono) or (not self.patrono_catalog) or patrono in self.patrono_catalog
+        patrono_key = patrono.upper()
+        patrono_in_catalog = (not patrono_key) or (not self.patrono_catalog) or patrono_key in self.patrono_catalog
         if not patrono_in_catalog:
             status = "FAIL"
             severity = "ERROR"
@@ -1590,8 +1621,8 @@ class QAValidator:
                 status = "FAIL"
                 severity = "CRITICAL"
                 messages.append("Control BT sin expected_control_tree=BT.")
-            bancas = {clean(credito.get("creditoBanca")) for credito in fact.creditos if clean(credito.get("creditoBanca"))}
-            if "banca_personas" in bancas:
+            bancas = {clean_upper(credito.get("creditoBanca")) for credito in fact.creditos if clean(credito.get("creditoBanca"))}
+            if "BANCA_PERSONAS" in bancas:
                 status = "FAIL"
                 severity = "ERROR" if severity != "CRITICAL" else severity
                 messages.append("Control BT no debe pertenecer a banca_personas.")

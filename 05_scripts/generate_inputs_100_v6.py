@@ -31,7 +31,7 @@ FIELD_CONTRACT = BASE / '00_catalogos' / 'field_contract_arbol_expandido_general
 SCENARIOS = BASE / '00_catalogos' / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 ARCHIVE = BASE / 'qa100_v6.tar.zst'
 ROOT_NAME = 'qa100'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V13_QA1000_WIDE_RANDOM_2026_05_15'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V14_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_02'
 RUN_DATE = '2026-05-14'
 FLAT_XML_DIR = '02_inputs_xml_flat'
 
@@ -50,35 +50,38 @@ PATRONO_CODE_BY_NAME[PATRONO_NO_SPECIALIST['patronoNombre']] = PATRONO_NO_SPECIA
 REGION_VALUES = ['Metropolitana', 'Nor_oriente', 'Sur_occidente']
 BANCA_PERSONAS = 'banca_personas'
 BANCA_TRABAJADORES = 'banca_trabajadores'
+GENDER_VALUES = ['MASCULINO', 'FEMENINO']
 
 DOMAIN_RULES = {
     # El requerimiento original traía V,C; para este paquete se agrega D por la regla de negocio indicada por el usuario.
     'creditoEstado': {'C', 'D'},
-    'creditoBanca': {'banca_personas', 'banca_trabajadores'},
+    'creditoBanca': {'BANCA_PERSONAS', 'BANCA_TRABAJADORES'},
     'creditoTipoCliente': {'CN', 'CE', 'CR'},
-    'creditoRegion': {'Metropolitana', 'Nor_oriente', 'Sur_occidente'},
-    'participanteLaborEstado': {'Alta', 'Baja'},
-    'participanteLaborBanca': {'banca_personas', 'banca_trabajadores'},
-    'participanteLaborRegion': {'Metropolitana', 'Nor_oriente', 'Sur_occidente'},
+    'creditoRegion': {'METROPOLITANA', 'NOR_ORIENTE', 'SUR_OCCIDENTE'},
+    'participanteLaborEstado': {'ALTA', 'BAJA'},
+    'participanteLaborBanca': {'BANCA_PERSONAS', 'BANCA_TRABAJADORES'},
+    'participanteLaborRegion': {'METROPOLITANA', 'NOR_ORIENTE', 'SUR_OCCIDENTE'},
     'participanteLaborVacacion': {'0', '1'},
-    'participanteLaborTipo': {'abf', 'cn', 'cp'},
-    'clienteRegion': {'Metropolitana', 'Nor_oriente', 'Sur_occidente'},
-    'clienteEsSugerido': {'Si', 'No'},
-    'clienteEstabaAsignadoAbf': {'Si', 'No'},
-    'clienteFueDesembolsadoEnElUltimoMes': {'Si', 'No'},
-    'cnEstado': {'Alta', 'Baja'},
-    'cnRegion': {'Metropolitana', 'Nor_oriente', 'Sur_occidente'},
-    'asignadoEstado': {'Alta', 'Baja'},
+    'participanteLaborTipo': {'ABF', 'CN', 'CP'},
+    'clienteRegion': {'METROPOLITANA', 'NOR_ORIENTE', 'SUR_OCCIDENTE'},
+    'clienteEsSugerido': {'SI', 'NO'},
+    'clienteEstabaAsignadoAbf': {'SI', 'NO'},
+    'clienteFueDesembolsadoEnElUltimoMes': {'SI', 'NO'},
+    'clienteGenero': {'MASCULINO', 'FEMENINO'},
+    'cnEstado': {'ALTA', 'BAJA'},
+    'cnRegion': {'METROPOLITANA', 'NOR_ORIENTE', 'SUR_OCCIDENTE'},
+    'asignadoEstado': {'ALTA', 'BAJA'},
     'asignadoEnVacacion': {'0', '1'},
-    'asignadoBanca': {'banca_personas', 'banca_trabajadores'},
-    'asignadoBolsonEstado': {'Exceso', 'Equilibrio', 'Deficit'},
-    'abfSugeridoEstado': {'Alta', 'Baja'},
-    'abfSugeridoBanca': {'banca_personas', 'banca_trabajadores'},
-    'abfSugeridoRegion': {'Metropolitana', 'Nor_oriente', 'Sur_occidente'},
-    'abfSugeridoOportunidad': {'Sugerido', 'No_Sugerido'},
-    'esTrabajadorInterno': {'S', 'N'},
-    'cnCosechaEstado': {'Alta', 'Baja'},
-    'cnCosechaRegion': {'Metropolitana', 'Nor_oriente', 'Sur_occidente'},
+    'asignadoBanca': {'BANCA_PERSONAS', 'BANCA_TRABAJADORES'},
+    'asignadoGenero': {'MASCULINO', 'FEMENINO'},
+    'asignadoBolsonEstado': {'EXCESO', 'EQUILIBRIO', 'DEFICIT'},
+    'abfSugeridoEstado': {'ALTA', 'BAJA'},
+    'abfSugeridoBanca': {'BANCA_PERSONAS', 'BANCA_TRABAJADORES'},
+    'abfSugeridoRegion': {'METROPOLITANA', 'NOR_ORIENTE', 'SUR_OCCIDENTE'},
+    'abfSugeridoOportunidad': {'SUGERIDO', 'NO_SUGERIDO'},
+    'clienteesTrabajadorBt': {'S', 'N'},
+    'cosechaEstadoCn': {'ALTA', 'BAJA'},
+    'cosechaRegionCn': {'METROPOLITANA', 'NOR_ORIENTE', 'SUR_OCCIDENTE'},
 }
 OPTIONAL_BLANK_DOMAIN_FIELDS = {
     'abfSugeridoEstado',
@@ -156,8 +159,16 @@ BASE_CNS = [
 def esc(x) -> str:
     return escape('' if x is None else str(x), {'"': '&quot;'})
 
+def xml_value(x) -> str:
+    value = '' if x is None else str(x)
+    return value.upper() if any(ch.isalpha() for ch in value) else value
+
 def tag(name: str, value) -> str:
-    return f'<{name}>{esc(value)}</{name}>'
+    return f'<{name}>{esc(xml_value(value))}</{name}>'
+
+def deterministic_gender(key) -> str:
+    digest = hashlib.sha256(str(key).encode('utf-8')).hexdigest()
+    return GENDER_VALUES[int(digest[:8], 16) % len(GENDER_VALUES)]
 
 def fmt_region(v: str) -> str:
     return {'METROPOLITANA':'Metropolitana','NOR_ORIENTE':'Nor_oriente','SUR_OCCIDENTE':'Sur_occidente','Metropolitana':'Metropolitana','Nor_oriente':'Nor_oriente','Sur_occidente':'Sur_occidente'}.get(v, v)
@@ -312,6 +323,7 @@ def make_abf(code: str, estado: str, banca: str, edad: int, bolson: str, patrono
         'asignadoEnVacacion': vac,
         'asignadoBanca': banca,
         'asignadoEdad': str(edad),
+        'asignadoGenero': deterministic_gender(code),
         'especialistaPatrono1': e1,
         'especialistaPatrono2': e2,
         'especialistaPatrono3': e3,
@@ -439,15 +451,15 @@ def build_static_catalog(catalog: dict[str,dict]) -> tuple[list[dict], dict[tupl
     return cns, dict(group_variant_to_cns), by_code
 
 def abf_xml(abf: dict) -> str:
-    fields = ['asignadoCod','asignadoEstado','asignadoEnVacacion','asignadoBanca','asignadoEdad','especialistaPatrono1','especialistaPatrono2','especialistaPatrono3','asignadoBolsonAcumulativo','asignadoBolsonLimExposicion','asignadoBolsonEstado','participanteCosechaCod','participanteCosechaVacacion']
-    return '<Abf>' + ''.join(tag(f, abf.get(f,'')) for f in fields) + '</Abf>'
+    fields = ['asignadoCod','asignadoEstado','asignadoEnVacacion','asignadoBanca','asignadoEdad','asignadoGenero','especialistaPatrono1','especialistaPatrono2','especialistaPatrono3','asignadoBolsonAcumulativo','asignadoBolsonLimExposicion','asignadoBolsonEstado']
+    return '<abf>' + ''.join(tag(f, abf.get(f,'')) for f in fields) + '</abf>'
 
 def centro_xml(cn: dict) -> str:
-    parts=['<CentroDeNegocio>']
+    parts=['<centroDeNegocio>']
     for f, source in [('cnCod','cod'),('cnNombre','nombre'),('cnEstado','estado'),('cnRegion','region'),('cnMunicipio','municipio'),('cnDepartamento','departamento')]:
         parts.append(tag(f, cn[source]))
     parts.extend(abf_xml(a) for a in cn['abfs'])
-    parts.append('</CentroDeNegocio>')
+    parts.append('</centroDeNegocio>')
     return ''.join(parts)
 
 def assigned_abf_details(current_cn: str, current_abf: str, by_code: dict[str,dict]) -> tuple[dict|None, dict|None]:
@@ -580,6 +592,7 @@ def stable_client_fields(ctx: dict) -> dict:
         'clienteCod': str(10000000 + global_case_number),
         'clienteDpi': str(3000000000000 + global_case_number),
         'clienteEdad': str(ctx['cliente_edad']),
+        'clienteGenero': deterministic_gender(ctx['case_id']),
         'clienteNombre': 'Cliente QA ' + ctx['case_id'],
     }
 
@@ -726,8 +739,37 @@ def historical_credit(ctx: dict, i: int, cn_code: str, abf_code: str, by_code: d
     }
 
 def credito_xml(c: dict) -> str:
-    fields = ['creditoNo','creditoMonto','creditoTasa','creditoTipo','creditoEstado','creditoPatronoNombre','creditoPatronoCod','creditoBanca','creditoTipoCliente','creditoRegion','creditoFechaConsecion','creditoFechaCancelacion','creditoPatrono','participanteLaborCod','participanteLaborEstado','participanteLaborEdad','participanteLaborCn','participanteLaborBanca','participanteLaborRegion','participanteLaborMunicipio','participanteLaborVacacion','participanteLaborTipo','cnCosechaCod','cnCosechaNombre','cnCosechaEstado','cnCosechaRegion','cnCosechaDepartamento','cnCosechaMunicipio']
-    return '<Credito>' + ''.join(tag(f, c.get(f,'')) for f in fields) + '</Credito>'
+    fields = [
+        ('creditoNo','creditoNo'),
+        ('creditoMonto','creditoMonto'),
+        ('creditoTasa','creditoTasa'),
+        ('creditoTipo','creditoTipo'),
+        ('creditoEstado','creditoEstado'),
+        ('creditoPatronoNombre','creditoPatronoNombre'),
+        ('creditoPatronoCod','creditoPatronoCod'),
+        ('creditoBanca','creditoBanca'),
+        ('creditoTipoCliente','creditoTipoCliente'),
+        ('creditoRegion','creditoRegion'),
+        ('creditoFechaConsecion','creditoFechaConsecion'),
+        ('creditoFechaCancelacion','creditoFechaCancelacion'),
+        ('creditoPatrono','creditoPatrono'),
+        ('participanteLaborCod','participanteLaborCod'),
+        ('participanteLaborEstado','participanteLaborEstado'),
+        ('participanteLaborEdad','participanteLaborEdad'),
+        ('participanteLaborCn','participanteLaborCn'),
+        ('participanteLaborBanca','participanteLaborBanca'),
+        ('participanteLaborRegion','participanteLaborRegion'),
+        ('participanteLaborMunicipio','participanteLaborMunicipio'),
+        ('participanteLaborVacacion','participanteLaborVacacion'),
+        ('participanteLaborTipo','participanteLaborTipo'),
+        ('cosechaCodigoCn','cnCosechaCod'),
+        ('cosechaNombreCn','cnCosechaNombre'),
+        ('cosechaEstadoCn','cnCosechaEstado'),
+        ('cosechaRegionCn','cnCosechaRegion'),
+        ('cosechaDepartamentoCn','cnCosechaDepartamento'),
+        ('cosechaMunicipioCn','cnCosechaMunicipio'),
+    ]
+    return '<credito>' + ''.join(tag(out_name, c.get(src_name,'')) for out_name, src_name in fields) + '</credito>'
 
 def build_creditos(ctx: dict, route: dict, target_cn: str|None, by_code: dict[str,dict]) -> list[dict]:
     # Cliente nuevo: sin historial de créditos en ActivoCrediticio.
@@ -755,14 +797,15 @@ def build_xml(ctx: dict, route: dict, creditos: list[dict], target_cn: str|None,
     cliente_region = norm_region(ctx['client_region'])
     vivienda, trabajo = client_locations(ctx, route, target_cn, by_code)
     suggested = suggested_abf_fields(current_cn, current_abf, by_code) if gen.get('D15') == 'SI' else suggested_abf_fields('', '', by_code)
-    parts = ['<?xml version="1.0" encoding="UTF-8"?>',
-             '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
+    first_credit_no = creditos[0]['creditoNo'] if creditos else ''
+    parts = ['<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
              '<soapenv:Header/>',
-             '<soapenv:Body><rule:entryPointAdmonCarteraV2><solicitud>']
+             '<soapenv:Body><rule:entryPointAdmonCarteraV2><arg0>']
     parts.extend([
         tag('clienteNombre', cf['clienteNombre']),
         tag('clienteCod', cf['clienteCod']),
         tag('clienteEdad', cf['clienteEdad']),
+        tag('clienteGenero', cf['clienteGenero']),
         tag('clienteRegion', cliente_region),
         tag('clienteMunicipioVivienda', vivienda),
         tag('clienteMunicipioTrabajo', trabajo),
@@ -780,14 +823,22 @@ def build_xml(ctx: dict, route: dict, creditos: list[dict], target_cn: str|None,
         tag('abfSugeridoMunicipio', suggested['abfSugeridoMunicipio']),
         tag('abfSugeridoOportunidad', suggested['abfSugeridoOportunidad']),
         tag('clienteDpi', cf['clienteDpi']),
-        tag('esTrabajadorInterno', 'S' if gen.get('D03') == 'EMPLEADO' else 'N'),
-        '<InformacionGeneral>' + tag('fecha', RUN_DATE) + '</InformacionGeneral>',
-        '<ActivoCrediticio>'
+        tag('clienteesTrabajadorBt', 'S' if gen.get('D03') == 'EMPLEADO' else 'N'),
+        '<informacionGeneral>' + tag('fecha', RUN_DATE) + '</informacionGeneral>',
+        '<activoCrediticio>'
     ])
     parts.extend(credito_xml(c) for c in creditos)
-    parts.append('</ActivoCrediticio>')
+    parts.append('</activoCrediticio>')
     parts.append(static_activo_financiero)
-    parts.append('</solicitud></rule:entryPointAdmonCarteraV2></soapenv:Body></soapenv:Envelope>')
+    parts.append(
+        '<salidaBlaze><asignacionCredito>'
+        + tag('clienteCredito', first_credit_no)
+        + tag('clienteDpi', cf['clienteDpi'])
+        + tag('cnAsignadoAnteriorCod', current_cn)
+        + tag('abfAsignadoAnteriorCod', current_abf)
+        + '</asignacionCredito></salidaBlaze>'
+    )
+    parts.append('</arg0></rule:entryPointAdmonCarteraV2></soapenv:Body></soapenv:Envelope>')
     return ''.join(parts)
 
 def build_expected(ctx: dict, route: dict, target_cn: str|None, by_code: dict[str,dict]) -> dict:
@@ -1079,7 +1130,7 @@ def main(limit: int|None=None) -> None:
     catalog={r['expanded_route_id']: r for r in catalog_rows}
     manifest_rows=build_manifest_rows_from_catalog(catalog_rows, limit)
     cns, group_variant_to_cns, by_code = build_static_catalog(catalog)
-    static_activo_financiero = '<ActivoFinanciero>' + ''.join(centro_xml(cn) for cn in cns) + '</ActivoFinanciero>'
+    static_activo_financiero = '<activoFinanciero>' + ''.join(centro_xml(cn) for cn in cns) + '</activoFinanciero>'
     static_hash = hashlib.sha256(static_activo_financiero.encode('utf-8')).hexdigest()
     max_abf_slots=max(len(cn['abfs']) for cn in cns)
     abf_fields=abf_slot_fields(max_abf_slots)
@@ -1217,7 +1268,7 @@ def main(limit: int|None=None) -> None:
                         root=ET.fromstring(xml_bytes)
                         credito_bancas={e.text for e in root.findall('.//creditoBanca')}
                         abf_sug_banca=(root.find('.//abfSugeridoBanca').text or '') if root.find('.//abfSugeridoBanca') is not None else ''
-                        bt_credito_banca_ok='Si' if credito_bancas=={BANCA_TRABAJADORES} else 'No'
+                        bt_credito_banca_ok='Si' if credito_bancas=={xml_value(BANCA_TRABAJADORES)} else 'No'
                         bt_expected_tree_ok='Si' if expected.get('expected_control_tree')=='BT' else 'No'
                         pass_bt = bt_credito_banca_ok=='Si' and bt_expected_tree_ok=='Si'
                         if pass_bt: bt_pass += 1
@@ -1348,7 +1399,9 @@ def main(limit: int|None=None) -> None:
                 'final_rule_counts':dict(final_rule_counts),
                 'output_class_counts':dict(output_counts),
                 'notes':[
-                    'Cada XML incluye exactamente el mismo bloque ActivoFinanciero.',
+                    'Cada XML incluye exactamente el mismo bloque activoFinanciero en la estructura SOAP vigente.',
+                    'Se agregan clienteGenero y asignadoGenero; como PED no depende de genero, se asignan de forma deterministica pseudoaleatoria.',
+                    'Los valores alfanumericos del XML se serializan en mayuscula sin cambiar los nombres de etiquetas.',
                     'La fuerza comercial fija usa CNs/ABFs repetidos en todos los XMLs; se rotan 3 CNs candidatos por ruta para variar municipios sin perder control.',
                     'Los campos especialistaPatrono1/2/3 contienen nombres de patrono; el patrono del cliente se compara contra cualquiera de esos campos.',
                     'Tipo de cliente se deriva con la regla CE/D, CR/C, CN/sin créditos en ActivoCrediticio.',
@@ -1371,7 +1424,10 @@ Cambios incluidos:
 - Tipo cliente derivado por regla de negocio: CE si existe estado D; CR si historial todo C; CN sin historial HD.
 - Variación controlada por ruta: edad del cliente, patrono y municipio candidato cambian entre los {CASES_PER_ROUTE} casos sin romper la ruta.
 - Casos de selección aleatoria identificados en una fila por cliente con columnas codAbfActual1..N.
-- ActivoFinanciero fijo en todos los XMLs con los mismos CNs y ABFs.
+- Estructura XML vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito.
+- Campos clienteGenero y asignadoGenero agregados de forma deterministica pseudoaleatoria.
+- Valores alfanumericos serializados en mayuscula sin cambiar nombres de etiquetas.
+- activoFinanciero fijo en todos los XMLs con los mismos CNs y ABFs.
 
 Resumen:
 {json.dumps(summary, ensure_ascii=False, indent=2)}
@@ -1446,7 +1502,7 @@ def main_in_place(limit: int|None=None) -> None:
     if limit is None:
         write_manifest_csv(MANIFEST, manifest_rows)
     cns, group_variant_to_cns, by_code = build_static_catalog(catalog)
-    static_activo_financiero = '<ActivoFinanciero>' + ''.join(centro_xml(cn) for cn in cns) + '</ActivoFinanciero>'
+    static_activo_financiero = '<activoFinanciero>' + ''.join(centro_xml(cn) for cn in cns) + '</activoFinanciero>'
     static_hash = hashlib.sha256(static_activo_financiero.encode('utf-8')).hexdigest()
     max_abf_slots=max(len(cn['abfs']) for cn in cns)
     abf_fields=abf_slot_fields(max_abf_slots)
@@ -1561,7 +1617,7 @@ def main_in_place(limit: int|None=None) -> None:
                 root=ET.fromstring(xml_bytes)
                 credito_bancas={e.text for e in root.findall('.//creditoBanca')}
                 abf_sug_banca=(root.find('.//abfSugeridoBanca').text or '') if root.find('.//abfSugeridoBanca') is not None else ''
-                bt_credito_banca_ok='Si' if credito_bancas=={BANCA_TRABAJADORES} else 'No'
+                bt_credito_banca_ok='Si' if credito_bancas=={xml_value(BANCA_TRABAJADORES)} else 'No'
                 bt_expected_tree_ok='Si' if expected.get('expected_control_tree')=='BT' else 'No'
                 pass_bt = bt_credito_banca_ok=='Si' and bt_expected_tree_ok=='Si'
                 if pass_bt: bt_pass += 1
@@ -1603,7 +1659,7 @@ def main_in_place(limit: int|None=None) -> None:
     random_summary={'random_cases_generated':random_cases,'random_candidate_rows_generated':random_candidate_rows,'random_routes':len(route_random_counts),'expected_correct_count_per_random_route':CASES_PER_ROUTE,'random_candidate_layout':'una fila por cliente con codAbfActual1..N'}
     bt_summary={'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'bt_validation_pass_rate':None if bt_total==0 else round(bt_pass/bt_total,6)}
     generated_at = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'cases_per_route':CASES_PER_ROUTE,'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'flat_xml_folder':FLAT_XML_DIR,'flat_xml_count':counts['total_cases'],'expected_abf_slot_count':max_abf_slots,'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.','Las salidas aleatorias se consolidan en una fila por cliente con columnas codAbfActual1..N; codCnActual permanece unico.','La carpeta 02_inputs_xml_flat contiene todos los XMLs juntos como enlaces duros hacia los XMLs por ruta para evitar duplicar espacio.','Alinea General post primera asignacion: ABF asignado en baja para D06, asesor asignado para D25, baja temporal D16/D34 y CN de cosecha por region/ruta.']}
+    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'cases_per_route':CASES_PER_ROUTE,'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'flat_xml_folder':FLAT_XML_DIR,'flat_xml_count':counts['total_cases'],'expected_abf_slot_count':max_abf_slots,'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.','Estructura XML vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito.','Se agregan clienteGenero y asignadoGenero; como PED no depende de genero, se asignan de forma deterministica pseudoaleatoria.','Los valores alfanumericos del XML se serializan en mayuscula sin cambiar nombres de etiquetas.','Las salidas aleatorias se consolidan en una fila por cliente con columnas codAbfActual1..N; codCnActual permanece unico.','La carpeta 02_inputs_xml_flat contiene todos los XMLs juntos como enlaces duros hacia los XMLs por ruta para evitar duplicar espacio.','Alinea General post primera asignacion: ABF asignado en baja para D06, asesor asignado para D25, baja temporal D16/D34 y CN de cosecha por region/ruta.']}
     for path, data in [
         (BASE/'04_validation'/'generation_summary.json', summary),
         (BASE/'04_validation'/'domain_validation_summary.json', domain_summary),

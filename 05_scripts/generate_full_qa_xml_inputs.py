@@ -2,7 +2,7 @@
 """
 Generador de XMLs de entrada para QA Blaze - General_post_primera_asignacion expandido.
 Genera 222,000 XMLs: 221,000 rutas core ABF + 1,000 casos de control BT.
-No inserta SalidaBlaze dentro del request; la salida esperada queda en 03_expected/expected_outputs.csv.
+Usa la estructura XML vigente con arg0, genero y salidaBlaze de contexto.
 """
 from __future__ import annotations
 import csv
@@ -25,7 +25,7 @@ CATALOG = BASE / 'catalogo_rutas_arbol_expandido_general_post_full_with_bt_contr
 FIELD_CONTRACT = BASE / 'field_contract_arbol_expandido_general_post_primera_asignacion.csv'
 SCENARIOS = BASE / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 OUT_ROOT = BASE / 'qa_inputs_arbol_expandido_general_post_full_bt'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V1_2026_05_13'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V14_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_02'
 RUN_DATE = '2026-05-13'
 FLAT_XML_DIR = '02_inputs_xml_flat'
 MAX_EXPECTED_ABF_SLOTS = 4
@@ -67,6 +67,7 @@ LABOR_CN_BY_REGION = {
 
 PATRONO_CODE = '1000786'
 PATRONO_NAME = 'MINISTERIO DE EDUCACION'
+GENDER_VALUES = ['MASCULINO', 'FEMENINO']
 
 
 def norm_yes_no(v: str | None) -> str | None:
@@ -104,8 +105,18 @@ def esc(x) -> str:
     return escape('' if x is None else str(x), {'"': '&quot;'})
 
 
+def xml_value(x) -> str:
+    value = '' if x is None else str(x)
+    return value.upper() if any(ch.isalpha() for ch in value) else value
+
+
 def tag(name: str, value) -> str:
-    return f'<{name}>{esc(value)}</{name}>'
+    return f'<{name}>{esc(xml_value(value))}</{name}>'
+
+
+def deterministic_gender(key) -> str:
+    digest = sum(ord(ch) for ch in str(key))
+    return GENDER_VALUES[digest % len(GENDER_VALUES)]
 
 
 def stable_code(prefix_num: int, rng: random.Random) -> str:
@@ -407,14 +418,13 @@ def cn_profile(ctx: dict, key: str) -> dict:
 
 
 def abf_xml(abf: dict) -> str:
-    parts = ['<Abf>']
+    parts = ['<abf>']
     for k in ['asignadoCod', 'asignadoEstado', 'asignadoEnVacacion', 'asignadoBanca', 'asignadoEdad',
-              'especialistaPatrono1', 'especialistaPatrono2', 'especialistaPatrono3',
-              'asignadoBolsonAcumulativo', 'asignadoBolsonLimExposicion', 'asignadoBolsonEstado',
-              'participanteCosechaCod', 'participanteCosechaVacacion']:
+              'asignadoGenero', 'especialistaPatrono1', 'especialistaPatrono2', 'especialistaPatrono3',
+              'asignadoBolsonAcumulativo', 'asignadoBolsonLimExposicion', 'asignadoBolsonEstado']:
         if k in abf:
             parts.append(tag(k, abf[k]))
-    parts.append('</Abf>')
+    parts.append('</abf>')
     return ''.join(parts)
 
 
@@ -425,14 +435,13 @@ def make_abf(code: str, estado: str, banca: str, edad: int, bolson: str, patrono
         'asignadoEnVacacion': vac,
         'asignadoBanca': banca,
         'asignadoEdad': str(edad),
+        'asignadoGenero': deterministic_gender(code),
         'especialistaPatrono1': PATRONO_CODE if patrono else '-1',
         'especialistaPatrono2': '-1',
         'especialistaPatrono3': '-1',
         'asignadoBolsonAcumulativo': '75000' if bolson == 'DEFICIT' else '250000',
         'asignadoBolsonLimExposicion': '100000',
         'asignadoBolsonEstado': bolson,
-        'participanteCosechaCod': cosecha or '-1',
-        'participanteCosechaVacacion': '0',
     }
 
 
@@ -519,13 +528,22 @@ def build_cns_and_abfs(ctx: dict) -> list[dict]:
 
 
 def credito_xml(c: dict) -> str:
-    fields = ['creditoNo', 'creditoMonto', 'creditoTasa', 'creditoTipo', 'creditoEstado', 'creditoPatronoNombre',
-              'creditoPatronoCod', 'creditoBanca', 'creditoTipoCliente', 'creditoRegion', 'creditoFechaConsecion',
-              'creditoFechaCancelacion', 'creditoPatrono', 'participanteLaborCod', 'participanteLaborEstado',
-              'participanteLaborEdad', 'participanteLaborCn', 'participanteLaborBanca', 'participanteLaborRegion',
-              'participanteLaborMunicipio', 'participanteLaborVacacion', 'participanteLaborTipo', 'cnCosechaCod',
-              'cnCosechaNombre', 'cnCosechaEstado', 'cnCosechaRegion', 'cnCosechaDepartamento', 'cnCosechaMunicipio']
-    return '<Credito>' + ''.join(tag(f, c.get(f, '')) for f in fields) + '</Credito>'
+    fields = [
+        ('creditoNo','creditoNo'), ('creditoMonto','creditoMonto'), ('creditoTasa','creditoTasa'),
+        ('creditoTipo','creditoTipo'), ('creditoEstado','creditoEstado'), ('creditoPatronoNombre','creditoPatronoNombre'),
+        ('creditoPatronoCod','creditoPatronoCod'), ('creditoBanca','creditoBanca'), ('creditoTipoCliente','creditoTipoCliente'),
+        ('creditoRegion','creditoRegion'), ('creditoFechaConsecion','creditoFechaConsecion'),
+        ('creditoFechaCancelacion','creditoFechaCancelacion'), ('creditoPatrono','creditoPatrono'),
+        ('participanteLaborCod','participanteLaborCod'), ('participanteLaborEstado','participanteLaborEstado'),
+        ('participanteLaborEdad','participanteLaborEdad'), ('participanteLaborCn','participanteLaborCn'),
+        ('participanteLaborBanca','participanteLaborBanca'), ('participanteLaborRegion','participanteLaborRegion'),
+        ('participanteLaborMunicipio','participanteLaborMunicipio'), ('participanteLaborVacacion','participanteLaborVacacion'),
+        ('participanteLaborTipo','participanteLaborTipo'), ('cosechaCodigoCn','cnCosechaCod'),
+        ('cosechaNombreCn','cnCosechaNombre'), ('cosechaEstadoCn','cnCosechaEstado'),
+        ('cosechaRegionCn','cnCosechaRegion'), ('cosechaDepartamentoCn','cnCosechaDepartamento'),
+        ('cosechaMunicipioCn','cnCosechaMunicipio'),
+    ]
+    return '<credito>' + ''.join(tag(out_name, c.get(src_name, '')) for out_name, src_name in fields) + '</credito>'
 
 
 def build_creditos(ctx: dict, cns: list[dict]) -> list[dict]:
@@ -699,15 +717,16 @@ def build_xml(ctx: dict, cns: list[dict], creditos: list[dict]) -> str:
     assigned_abf_code = ctx['current_abf'] if ctx['assigned_yes'] else '-1'
     current_cn = CN_CODES['ASIGNADO'] if ctx['assigned_yes'] else (CN_CODES['COSECHA'] if ctx['general_decisions'].get('D22') == 'SI' else '-1')
     suggested = suggested_abf_fields(current_cn, assigned_abf_code, cns) if ctx['general_decisions'].get('D15') == 'SI' else suggested_abf_fields('', '', cns)
+    first_credit_no = creditos[0]['creditoNo'] if creditos else ''
 
-    parts = ['<?xml version="1.0" encoding="UTF-8"?>',
-             '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
+    parts = ['<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
              '<soapenv:Header/>',
-             '<soapenv:Body><rule:entryPointAdmonCarteraV2><solicitud>']
+             '<soapenv:Body><rule:entryPointAdmonCarteraV2><arg0>']
     parts.extend([
         tag('clienteNombre', 'CLIENTE QA ' + ctx['case_id']),
         tag('clienteCod', ctx['client_code']),
         tag('clienteEdad', ctx['cliente_edad']),
+        tag('clienteGenero', deterministic_gender(ctx['case_id'])),
         tag('clienteRegion', ctx['client_region']),
         tag('clienteMunicipioVivienda', ctx['vivienda']),
         tag('clienteMunicipioTrabajo', ctx['trabajo']),
@@ -725,22 +744,30 @@ def build_xml(ctx: dict, cns: list[dict], creditos: list[dict]) -> str:
         tag('abfSugeridoMunicipio', suggested['abfSugeridoMunicipio']),
         tag('abfSugeridoOportunidad', suggested['abfSugeridoOportunidad']),
         tag('clienteDpi', ctx['dpi']),
-        tag('esTrabajadorInterno', 'S' if ctx['general_decisions'].get('D03') == 'EMPLEADO' else 'N'),
-        '<InformacionGeneral>' + tag('fecha', RUN_DATE) + '</InformacionGeneral>',
-        '<ActivoCrediticio>'
+        tag('clienteesTrabajadorBt', 'S' if ctx['general_decisions'].get('D03') == 'EMPLEADO' else 'N'),
+        '<informacionGeneral>' + tag('fecha', RUN_DATE) + '</informacionGeneral>',
+        '<activoCrediticio>'
     ])
     parts.extend(credito_xml(c) for c in creditos)
-    parts.append('</ActivoCrediticio><ActivoFinanciero>')
+    parts.append('</activoCrediticio><activoFinanciero>')
     for cn in cns:
-        parts.append('<CentroDeNegocio>')
+        parts.append('<centroDeNegocio>')
         parts.extend([
             tag('cnCod', cn['cod']), tag('cnNombre', cn['nombre']), tag('cnEstado', cn['estado']),
             tag('cnRegion', cn['region']), tag('cnMunicipio', cn['municipio']), tag('cnDepartamento', cn['departamento'])
         ])
         parts.extend(abf_xml(a) for a in cn['abfs'])
-        parts.append('</CentroDeNegocio>')
-    parts.append('</ActivoFinanciero>')
-    parts.append('</solicitud></rule:entryPointAdmonCarteraV2></soapenv:Body></soapenv:Envelope>')
+        parts.append('</centroDeNegocio>')
+    parts.append('</activoFinanciero>')
+    parts.append(
+        '<salidaBlaze><asignacionCredito>'
+        + tag('clienteCredito', first_credit_no)
+        + tag('clienteDpi', ctx['dpi'])
+        + tag('cnAsignadoAnteriorCod', current_cn)
+        + tag('abfAsignadoAnteriorCod', assigned_abf_code)
+        + '</asignacionCredito></salidaBlaze>'
+    )
+    parts.append('</arg0></rule:entryPointAdmonCarteraV2></soapenv:Body></soapenv:Envelope>')
     return ''.join(parts)
 
 
@@ -808,7 +835,7 @@ def prepare_output_root() -> None:
 
 
 def write_readme(summary: dict | None = None) -> None:
-    text = f"""Paquete QA Blaze - árbol expandido General_post_primera_asignacion\n\nGenerado: {datetime.utcnow().isoformat()}Z\nVersión generador: {RUN_VERSION}\n\nContenido:\n- 00_catalogos/: catálogo de rutas, contrato de campos y constraints usados para generar los casos.\n- 01_manifest/: manifest full con 222,000 casos.\n- 02_inputs_xml/: XMLs de entrada para ejecutar contra Blaze.\n- 03_expected/: expected_outputs.csv con la salida esperada por case_id.\n- 04_validation/: reportes de validación de generación, incluyendo control BT.\n- 05_scripts/: script reproducible de generación.\n\nNota importante:\nLos XMLs no incluyen SalidaBlaze dentro del request. La salida esperada se conserva fuera del XML para no contaminar la ejecución de Blaze.\n\nAclaración de negocio incorporada:\n- labor = persona que desembolsó el crédito; campos participanteLabor*.\n- asignación = a quién pertenece actualmente el cliente; campos clienteEsCarteraDel*, asignado*.\n- cosecha = CN donde se desembolsó el crédito; campos cnCosecha*. Puede diferir de participanteLaborCn.\n"""
+    text = f"""Paquete QA Blaze - arbol expandido General_post_primera_asignacion\n\nGenerado: {datetime.utcnow().isoformat()}Z\nVersion generador: {RUN_VERSION}\n\nContenido:\n- 00_catalogos/: catalogo de rutas, contrato de campos y constraints usados para generar los casos.\n- 01_manifest/: manifest full con 222,000 casos.\n- 02_inputs_xml/: XMLs de entrada para ejecutar contra Blaze.\n- 03_expected/: expected_outputs.csv con la salida esperada por case_id.\n- 04_validation/: reportes de validacion de generacion, incluyendo control BT.\n- 05_scripts/: script reproducible de generacion.\n\nNota importante:\nLos XMLs usan la estructura SOAP vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito. Se agregan clienteGenero y asignadoGenero, y los valores alfanumericos se serializan en mayuscula.\n\nAclaracion de negocio incorporada:\n- labor = persona que desembolso el credito; campos participanteLabor*.\n- asignacion = a quien pertenece actualmente el cliente; campos clienteEsCarteraDel*, asignado*.\n- cosecha = CN donde se desembolso el credito; campos cosecha* en el XML. Puede diferir de participanteLaborCn.\n"""
     if summary:
         text += "\nResumen de generación:\n" + json.dumps(summary, ensure_ascii=False, indent=2) + "\n"
     (OUT_ROOT / 'README.txt').write_text(text, encoding='utf-8')
