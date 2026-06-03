@@ -161,12 +161,16 @@ def validate_xmls(manifest_rows: list[dict[str, str]], expected_rows: list[dict[
             )
             continue
 
-        cn_count = len([elem for elem in root.iter() if elem.tag.split("}", 1)[-1] == "CentroDeNegocio"])
-        abf_count = len([elem for elem in root.iter() if elem.tag.split("}", 1)[-1] == "Abf"])
-        has_solicitud = any(elem.tag.split("}", 1)[-1] == "solicitud" for elem in root.iter())
-        has_creditos = any(elem.tag.split("}", 1)[-1] == "ActivoCrediticio" for elem in root.iter())
-        has_financiero = any(elem.tag.split("}", 1)[-1] == "ActivoFinanciero" for elem in root.iter())
+        cn_count = len([elem for elem in root.iter() if elem.tag.split("}", 1)[-1] == "centroDeNegocio"])
+        abf_count = len([elem for elem in root.iter() if elem.tag.split("}", 1)[-1] == "abf"])
+        has_solicitud = any(elem.tag.split("}", 1)[-1] == "arg0" for elem in root.iter())
+        has_creditos = any(elem.tag.split("}", 1)[-1] == "activoCrediticio" for elem in root.iter())
+        has_financiero = any(elem.tag.split("}", 1)[-1] == "activoFinanciero" for elem in root.iter())
+        asignado_generos = text_list(root, "asignadoGenero")
+        has_genero = bool(first_text(root, "clienteGenero")) and len(asignado_generos) == abf_count and all(asignado_generos)
         xml_status = "PASS" if has_solicitud and has_creditos and has_financiero and cn_count > 0 and abf_count > 0 else "FAIL"
+        if not has_genero:
+            xml_status = "FAIL"
         xml_rows.append(
             {
                 "case_id": case_id,
@@ -177,7 +181,7 @@ def validate_xmls(manifest_rows: list[dict[str, str]], expected_rows: list[dict[
                 "cn_count": cn_count,
                 "abf_count": abf_count,
                 "parse_error": parse_error,
-                "message": "OK" if xml_status == "PASS" else "Estructura XML incompleta.",
+                "message": "OK" if xml_status == "PASS" else "Estructura XML incompleta o genero faltante.",
             }
         )
 
@@ -186,7 +190,7 @@ def validate_xmls(manifest_rows: list[dict[str, str]], expected_rows: list[dict[
         credito_tipos = text_values(root, "creditoTipoCliente")
         credito_region_values = text_values(root, "creditoRegion")
         participante_region_values = text_values(root, "participanteLaborRegion")
-        cosecha_region_values = text_values(root, "cnCosechaRegion")
+        cosecha_region_values = text_values(root, "cosechaRegionCn")
         cn_region_values = text_values(root, "cnRegion")
         cn_municipios = text_values(root, "cnMunicipio")
         cliente_municipios = []
@@ -194,15 +198,20 @@ def validate_xmls(manifest_rows: list[dict[str, str]], expected_rows: list[dict[
             value = first_text(root, field)
             if value and value != "SIN_MUNICIPIO":
                 cliente_municipios.append(value)
+        lowercase_values = []
+        for elem in root.iter():
+            value = (elem.text or "").strip()
+            if any(char.isalpha() for char in value) and value != value.upper():
+                lowercase_values.append(elem.tag.split("}", 1)[-1])
         expected_tree = expected.get("expected_control_tree", "")
         expected_tipo = expected.get("tipo_cliente_expected", "")
         messages: list[str] = []
         if expected_tree == "BT":
-            bt_status = "PASS" if credito_bancas == {"banca_trabajadores"} else "FAIL"
+            bt_status = "PASS" if credito_bancas == {"BANCA_TRABAJADORES"} else "FAIL"
             if bt_status != "PASS":
                 messages.append("Creditos BT con banca distinta.")
         elif expected_tree == "PED":
-            bt_status = "PASS" if credito_bancas == {"banca_personas"} else "FAIL"
+            bt_status = "PASS" if credito_bancas == {"BANCA_PERSONAS"} else "FAIL"
             if bt_status != "PASS":
                 messages.append("Ruta PED con banca inesperada.")
         else:
@@ -210,7 +219,7 @@ def validate_xmls(manifest_rows: list[dict[str, str]], expected_rows: list[dict[
             messages.append("expected_control_tree invalido.")
 
         region_values = credito_region_values | participante_region_values | cosecha_region_values | cn_region_values
-        if region_values != {"Metropolitana"}:
+        if region_values != {"METROPOLITANA"}:
             bt_status = "FAIL"
             messages.append(f"Region distinta a Metropolitana: {'|'.join(sorted(region_values))}.")
         if expected_tipo and credito_tipos and credito_tipos != {expected_tipo}:
@@ -226,6 +235,9 @@ def validate_xmls(manifest_rows: list[dict[str, str]], expected_rows: list[dict[
         if missing_municipios:
             bt_status = "FAIL"
             messages.append(f"Municipios de cliente sin CN: {'|'.join(missing_municipios)}.")
+        if lowercase_values:
+            bt_status = "FAIL"
+            messages.append(f"Valores textuales sin mayuscula: {'|'.join(lowercase_values[:5])}.")
         if not messages:
             messages.append("OK")
 

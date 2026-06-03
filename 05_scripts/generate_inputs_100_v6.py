@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import csv, hashlib, importlib.util, io, json, os, random, re, subprocess, tarfile, tempfile, time
+import csv, hashlib, importlib.util, io, json, os, random, re, shutil, subprocess, tarfile, tempfile, time
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -31,7 +31,7 @@ FIELD_CONTRACT = BASE / '00_catalogos' / 'field_contract_arbol_expandido_general
 SCENARIOS = BASE / '00_catalogos' / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 ARCHIVE = BASE / 'qa100_v6.tar.zst'
 ROOT_NAME = 'qa100'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V14_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_02'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V15_FLAT_ONLY_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_03'
 RUN_DATE = '2026-05-14'
 FLAT_XML_DIR = '02_inputs_xml_flat'
 
@@ -283,12 +283,12 @@ def build_manifest_rows_from_catalog(catalog_rows: list[dict], limit: int|None=N
                 'final_rule': route['final_rule'],
                 'final_output_class_id': route['final_output_class_id'],
                 'expected_mode': route['expected_mode'],
-                'input_xml_path': f"02_inputs_xml/{route['expanded_route_id']}/{case_number:04d}.xml",
+                'input_xml_path': f"{FLAT_XML_DIR}/{case_id}.xml",
                 'input_xml_flat_path': f"{FLAT_XML_DIR}/{case_id}.xml",
                 'expected_output_path': '03_expected/expected_outputs.csv',
                 'tree_version': 'General_post_primera_asignacion_full',
                 'mapping_version': 'v6',
-                'generator_version': 'GENERATOR_MANIFEST_V3_1000_PER_ROUTE',
+                'generator_version': 'GENERATOR_MANIFEST_V4_1000_PER_ROUTE_FLAT_ONLY',
             })
             if limit is not None and len(rows) >= limit:
                 return rows
@@ -1489,8 +1489,7 @@ Resumen:
             (BASE/'sample_input_qa100_v6.xml').write_text(first_xml_full, encoding='utf-8')
         # Evitar listar el .tar.zst completo aquí: tiene 22,200 XMLs y la validación de rutas largas
         # se controla por convención de nombres cortos en el manifest.
-        (BASE/'qa100_v6_longest_path.txt').write_text('menor_a_120_caracteres\nqa100/02_inputs_xml/<route_id>/<0001.xml>\n', encoding='utf-8')
-        import shutil
+        (BASE/'qa100_v6_longest_path.txt').write_text('menor_a_120_caracteres\nqa100/02_inputs_xml_flat/<case_id>.xml>\n', encoding='utf-8')
         shutil.rmtree(tmpdir, ignore_errors=True)
     print(json.dumps({'archive':str(ARCHIVE),'size_bytes':ARCHIVE.stat().st_size,'duration_seconds':round(time.time()-start,2),'total_xml_inputs_generated':counts['total_cases'],'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_passed':tipo_pass_count,'patrono_passed':patrono_pass_count,'random_cases':random_cases,'bt_cases_generated':bt_total,'bt_cases_passed_validation':bt_pass,'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'cn_count_distribution':dict(cn_count_values)}, ensure_ascii=False, indent=2), flush=True)
 
@@ -1507,11 +1506,13 @@ def main_in_place(limit: int|None=None) -> None:
     max_abf_slots=max(len(cn['abfs']) for cn in cns)
     abf_fields=abf_slot_fields(max_abf_slots)
 
-    for rel in ['02_inputs_xml', FLAT_XML_DIR, '03_expected', '04_validation', '00_catalogos']:
+    route_xml_dir = BASE / '02_inputs_xml'
+    if limit is None and route_xml_dir.exists():
+        shutil.rmtree(route_xml_dir)
+    if limit is None and (BASE / FLAT_XML_DIR).exists():
+        shutil.rmtree(BASE / FLAT_XML_DIR)
+    for rel in [FLAT_XML_DIR, '03_expected', '04_validation', '00_catalogos']:
         (BASE / rel).mkdir(parents=True, exist_ok=True)
-    if limit is None:
-        for stale in (BASE / FLAT_XML_DIR).glob('*.xml'):
-            stale.unlink()
     write_static_cn_catalog_csv(BASE / '00_catalogos' / 'cn_catalog.csv', cns)
     write_patrono_catalog_csv(BASE / '00_catalogos' / 'patrono_catalog.csv')
 
@@ -1570,7 +1571,6 @@ def main_in_place(limit: int|None=None) -> None:
             out_path=BASE / rel_xml
             out_path.parent.mkdir(parents=True, exist_ok=True)
             write_bytes_retry(out_path, xml_bytes)
-            ensure_hardlink(out_path, BASE / man['input_xml_flat_path'])
 
             expected=build_expected(ctx, route, target_cn, by_code)
             expected_row=expected_row_for_csv(expected, max_abf_slots)
@@ -1659,7 +1659,7 @@ def main_in_place(limit: int|None=None) -> None:
     random_summary={'random_cases_generated':random_cases,'random_candidate_rows_generated':random_candidate_rows,'random_routes':len(route_random_counts),'expected_correct_count_per_random_route':CASES_PER_ROUTE,'random_candidate_layout':'una fila por cliente con codAbfActual1..N'}
     bt_summary={'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'bt_validation_pass_rate':None if bt_total==0 else round(bt_pass/bt_total,6)}
     generated_at = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'cases_per_route':CASES_PER_ROUTE,'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'flat_xml_folder':FLAT_XML_DIR,'flat_xml_count':counts['total_cases'],'expected_abf_slot_count':max_abf_slots,'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.','Estructura XML vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito.','Se agregan clienteGenero y asignadoGenero; como PED no depende de genero, se asignan de forma deterministica pseudoaleatoria.','Los valores alfanumericos del XML se serializan en mayuscula sin cambiar nombres de etiquetas.','Las salidas aleatorias se consolidan en una fila por cliente con columnas codAbfActual1..N; codCnActual permanece unico.','La carpeta 02_inputs_xml_flat contiene todos los XMLs juntos como enlaces duros hacia los XMLs por ruta para evitar duplicar espacio.','Alinea General post primera asignacion: ABF asignado en baja para D06, asesor asignado para D25, baja temporal D16/D34 y CN de cosecha por region/ruta.']}
+    summary={'artifact':ROOT_NAME,'output_root':str(BASE),'generated_at_utc':generated_at,'generator_version':RUN_VERSION,'duration_seconds':round(time.time()-start,2),'cases_per_route':CASES_PER_ROUTE,'total_xml_inputs_generated':counts['total_cases'],'expanded_routes_generated':len(route_counts),'flat_xml_folder':FLAT_XML_DIR,'flat_xml_count':counts['total_cases'],'expected_abf_slot_count':max_abf_slots,'core_cases_generated':sum(cnt for rid2,cnt in route_counts.items() if rid2 != 'GPA-038__CONTROL_BT'),'bt_control_cases_generated':bt_total,'bt_control_cases_passed_validation':bt_pass,'r2_cases_generated':r2_total,'r2_cases_passed_validation':r2_pass_count,'tipo_cliente_cases_passed_validation':tipo_pass_count,'patrono_cases_passed_validation':patrono_pass_count,'random_cases_generated':random_cases,'random_routes_generated':len(route_random_counts),'static_cn_catalog_count':len(cns),'static_abf_total':sum(len(cn['abfs']) for cn in cns),'activo_financiero_static_hash':static_hash,'domain_validation_failed_sampled_cases':domain_fail_total,'cn_count_distribution':dict(cn_count_values),'min_abfs_per_cn_distribution':dict(abf_min_values),'max_abfs_per_cn_distribution':dict(abf_max_values),'labor_cosecha_different_cases':labor_diff_count,'final_rule_counts':dict(final_rule_counts),'output_class_counts':dict(output_counts),'notes':['Campos abfSugerido* espejan la asignacion actual del cliente cuando existe; si abfSugeridoCod es nulo, todos los campos abfSugerido* quedan en blanco.','Campos participanteLabor* usan un CN/ABF labor de la region exigida por la ruta; el CN de cosecha puede diferir cuando la regla lo permite.','Estructura XML vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito.','Se agregan clienteGenero y asignadoGenero; como PED no depende de genero, se asignan de forma deterministica pseudoaleatoria.','Los valores alfanumericos del XML se serializan en mayuscula sin cambiar nombres de etiquetas.','Las salidas aleatorias se consolidan en una fila por cliente con columnas codAbfActual1..N; codCnActual permanece unico.','Solo se genera la carpeta 02_inputs_xml_flat con todos los XMLs juntos; no se conserva 02_inputs_xml por ruta.','Alinea General post primera asignacion: ABF asignado en baja para D06, asesor asignado para D25, baja temporal D16/D34 y CN de cosecha por region/ruta.']}
     for path, data in [
         (BASE/'04_validation'/'generation_summary.json', summary),
         (BASE/'04_validation'/'domain_validation_summary.json', domain_summary),

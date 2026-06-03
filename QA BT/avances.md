@@ -47,3 +47,28 @@
 
 ### Proximo paso sugerido
 - Ejecutar los XMLs contra Blaze y cargar respuestas reales en la plantilla de comparacion.
+
+## [2026-06-03 12:02] Avance: Estructura BT con genero
+
+### Que se reviso
+- Ejemplo `input_con_ultimos_cambios (1).xml`.
+- XMLs planos de `02_inputs_xml_flat`.
+- Validaciones de estructura, manifest, XML y reglas BT.
+
+### Hallazgos
+- La nueva estructura usa `arg0`, `informacionGeneral`, `activoCrediticio`, `activoFinanciero`, `centroDeNegocio`, `abf`, `salidaBlaze` y `asignacionCredito`.
+- El ejemplo agrega `clienteGenero` y `asignadoGenero`.
+- Los valores textuales deben ir en mayuscula sin cambiar nombres de etiquetas.
+
+### Resultado
+- PASS
+
+### Archivos involucrados
+- `05_scripts/generate_bt_qa_inputs.py`
+- `05_scripts/validate_bt_flat_qa.py`
+- `02_inputs_xml_flat/*.xml`
+- `04_validation/sample_input_bt.xml`
+- `04_validation/outputs/qa_bt_validation_summary.json`
+
+### Proximo paso sugerido
+- Ejecutar los XMLs actualizados contra Blaze para comparar las respuestas reales.

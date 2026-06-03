@@ -27,7 +27,6 @@ MAX_EXPECTED_ABF_SLOTS = 4
 REQUIRED_DIRS = [
     "00_catalogos",
     "01_manifest",
-    "02_inputs_xml",
     "02_inputs_xml_flat",
     "03_expected",
     "04_validation",
@@ -736,17 +735,6 @@ class QAValidator:
             if clean(row.get("patronoNombre"))
         }
 
-        inputs_dir = self.root / "02_inputs_xml"
-        if inputs_dir.exists():
-            self.route_folders = {path.name for path in inputs_dir.iterdir() if path.is_dir()}
-            actual_xml_files: set[str] = set()
-            for dirpath, _dirnames, filenames in os.walk(inputs_dir):
-                for filename in filenames:
-                    if filename.lower().endswith(".xml"):
-                        path = Path(dirpath) / filename
-                        rel_inside = path.relative_to(inputs_dir).as_posix()
-                        actual_xml_files.add(f"02_inputs_xml/{rel_inside}")
-            self.actual_xml_files = actual_xml_files
         flat_dir = self.root / "02_inputs_xml_flat"
         if flat_dir.exists():
             flat_xml_files: set[str] = set()
@@ -754,7 +742,8 @@ class QAValidator:
                 if path.is_file() and path.name.lower().endswith(".xml"):
                     flat_xml_files.add(f"02_inputs_xml_flat/{path.name}")
             self.flat_xml_files = flat_xml_files
-        self.total_xml_found = len(self.actual_xml_files)
+            self.actual_xml_files = set(flat_xml_files)
+        self.total_xml_found = len(self.flat_xml_files)
 
     def add(self, report: str, row: dict[str, Any]) -> None:
         self.reports[report].append(row)
@@ -790,47 +779,21 @@ class QAValidator:
                 },
             )
 
-        expected_routes = set(self.route_by_id) or {clean(r.get("expanded_route_id")) for r in self.manifest_rows}
-        expected_routes.discard("")
-        found_routes = self.route_folders
-        missing_folders = sorted(expected_routes - found_routes)
-        extra_folders = sorted(found_routes - expected_routes)
-
+        route_xml_dir = self.root / "02_inputs_xml"
         self.add(
             "repo_structure",
             {
-                "check": "route_folder_count",
-                "status": "PASS" if len(found_routes) == len(expected_routes) else "FAIL",
-                "severity": "INFO" if len(found_routes) == len(expected_routes) else "CRITICAL",
-                "expected": len(expected_routes),
-                "found": len(found_routes),
-                "message": "Conteo de carpetas de ruta.",
+                "check": "route_xml_folder_absent",
+                "status": "PASS" if not route_xml_dir.exists() else "FAIL",
+                "severity": "INFO" if not route_xml_dir.exists() else "CRITICAL",
+                "expected": "absent",
+                "found": "exists" if route_xml_dir.exists() else "absent",
+                "message": "Solo debe existir la carpeta plana de XMLs.",
             },
         )
-        for route in missing_folders[:500]:
-            self.add(
-                "repo_structure",
-                {
-                    "check": "missing_route_folder",
-                    "status": "FAIL",
-                    "severity": "CRITICAL",
-                    "expected": route,
-                    "found": "",
-                    "message": "Ruta del catalogo/manifest sin carpeta en 02_inputs_xml.",
-                },
-            )
-        for route in extra_folders[:500]:
-            self.add(
-                "repo_structure",
-                {
-                    "check": "extra_route_folder",
-                    "status": "FAIL",
-                    "severity": "ERROR",
-                    "expected": "",
-                    "found": route,
-                    "message": "Carpeta de ruta no declarada en catalogo/manifest.",
-                },
-            )
+
+        expected_routes = set(self.route_by_id) or {clean(r.get("expanded_route_id")) for r in self.manifest_rows}
+        expected_routes.discard("")
 
         expected_xml_total = len(expected_routes) * EXPECTED_CASES_PER_ROUTE
         self.add(
@@ -856,10 +819,10 @@ class QAValidator:
             },
         )
 
-        counts_by_route = Counter(path.split("/")[1] for path in self.actual_xml_files if path.count("/") >= 2)
+        counts_by_route = Counter(Path(path).stem.rsplit("__", 1)[0] for path in self.flat_xml_files)
         bad_count_routes = [
             (route, counts_by_route.get(route, 0))
-            for route in sorted(found_routes | expected_routes)
+            for route in sorted(expected_routes)
             if counts_by_route.get(route, 0) != EXPECTED_CASES_PER_ROUTE
         ]
         if not bad_count_routes:
@@ -1032,19 +995,6 @@ class QAValidator:
                             "message": "XML plano referenciado por manifest no existe.",
                         },
                     )
-            if route and route not in self.route_folders:
-                self.add(
-                    "manifest_integrity",
-                    {
-                        "check": "route_without_folder",
-                        "status": "FAIL",
-                        "severity": "CRITICAL",
-                        "case_id": case_id,
-                        "expanded_route_id": route,
-                        "input_xml_path": input_path,
-                        "message": "Ruta del manifest no tiene carpeta.",
-                    },
-                )
             if route and self.route_by_id and route not in self.route_by_id:
                 self.add(
                     "manifest_integrity",
