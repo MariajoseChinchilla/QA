@@ -36,7 +36,7 @@
     },
     "repo_structure": {
       "file": "04_validation/outputs/repo_structure_report.csv",
-      "rows": 16,
+      "rows": 15,
       "issues": 0
     },
     "rule2": {
