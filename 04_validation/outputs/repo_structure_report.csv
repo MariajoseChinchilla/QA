@@ -13,4 +13,4 @@ route_xml_folder_absent,PASS,INFO,absent,absent,Solo debe existir la carpeta pla
 xml_total_count,PASS,INFO,222000,222000,Conteo total de XMLs.
 flat_xml_total_count,PASS,INFO,222000,222000,Conteo total de XMLs en carpeta plana.
 xml_count_per_route,PASS,INFO,1000,1000,Todas las rutas tienen el conteo esperado de XMLs.
-max_path_length,PASS,INFO,<=259,82,02_inputs_xml_flat/GPA-001__R2-003__R1-001__0041.xml
+max_path_length,PASS,INFO,<=259,82,02_inputs_xml_flat/GPA-029__R2-004__R1-004__0626.xml

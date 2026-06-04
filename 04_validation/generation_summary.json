@@ -1,9 +1,9 @@
 {
   "artifact": "qa100",
   "output_root": "C:\\Users\\Mariajose\\Desktop\\QA",
-  "generated_at_utc": "2026-06-03T19:14:34.371367Z",
-  "generator_version": "XML_INPUT_GENERATOR_V15_FLAT_ONLY_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_03",
-  "duration_seconds": 807.01,
+  "generated_at_utc": "2026-06-04T17:09:02.921932Z",
+  "generator_version": "XML_INPUT_GENERATOR_V16_FLAT_ONLY_CREDITO_ESTADO_CV_2026_06_04",
+  "duration_seconds": 1201.1,
   "cases_per_route": 1000,
   "total_xml_inputs_generated": 222000,
   "expanded_routes_generated": 222,

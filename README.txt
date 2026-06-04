@@ -9,7 +9,7 @@ Contenido principal:
 - 05_scripts/: scripts reproducibles.
 
 Resumen de la version actual:
-- Generador: XML_INPUT_GENERATOR_V15_FLAT_ONLY_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_03.
+- Generador: XML_INPUT_GENERATOR_V16_FLAT_ONLY_CREDITO_ESTADO_CV_2026_06_04.
 - Rutas: 222.
 - Casos por ruta: 1000.
 - XMLs totales: 222,000.
@@ -35,6 +35,7 @@ Reglas de datos incorporadas:
 - Se agregaron `clienteGenero` y `asignadoGenero`; PED no depende del genero, por lo que se asignan de forma deterministica pseudoaleatoria.
 - Todos los valores alfanumericos del XML se serializan en mayuscula sin cambiar los nombres de etiquetas.
 - Todo XML tiene al menos un `credito` y al menos un credito historico `HD`; ya no se generan clientes `CN` sin historial.
+- `creditoEstado` usa solo `C` y `V`; los clientes existentes `CE` se representan con estado `V`, ya no con `D`.
 
 Validaciones ejecutadas:
 - Compilacion de scripts: PASS.

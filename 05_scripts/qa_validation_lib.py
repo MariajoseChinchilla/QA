@@ -201,7 +201,7 @@ SCAN_REPORTS = {
 }
 
 DOMAIN_ALLOWED = {
-    "creditoEstado": {"V", "C", "D"},
+    "creditoEstado": {"V", "C"},
     "creditoBanca": {"BANCA_PERSONAS", "BANCA_TRABAJADORES"},
     "creditoTipoCliente": {"CN", "CE", "CR"},
     "creditoRegion": {"METROPOLITANA", "NOR_ORIENTE", "SUR_OCCIDENTE"},
@@ -422,7 +422,7 @@ def inferir_tipo_cliente(estados_credito: Iterable[str]) -> str:
     estados = [clean(estado) for estado in estados_credito if clean(estado)]
     if not estados:
         return "INDETERMINADO"
-    if "D" in estados:
+    if "V" in estados:
         return "CE"
     if estados and all(estado == "C" for estado in estados):
         return "CR"
@@ -1298,11 +1298,11 @@ class QAValidator:
             status = "FAIL"
             severity = "CRITICAL"
             messages.append("creditoTipoCliente en Credito no es coherente con estados.")
-        if inferred == "CE" and "D" not in estados:
+        if inferred == "CE" and "V" not in estados:
             status = "FAIL"
             severity = "CRITICAL"
-            messages.append("CE sin credito en estado D.")
-        if inferred == "CR" and (not estados or "D" in estados or not all(estado == "C" for estado in estados)):
+            messages.append("CE sin credito en estado V.")
+        if inferred == "CR" and (not estados or "V" in estados or not all(estado == "C" for estado in estados)):
             status = "FAIL"
             severity = "CRITICAL"
             messages.append("CR requiere historial solo en estado C.")

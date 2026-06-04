@@ -36,7 +36,7 @@ FIELD_CONTRACT = BASE / '00_catalogos' / 'field_contract_arbol_expandido_general
 SCENARIOS = BASE / '00_catalogos' / 'scenario_constraints_arbol_expandido_general_post_primera_asignacion.yml'
 ARCHIVE = BASE / 'qa100_v6.tar.zst'
 ROOT_NAME = 'qa100'
-RUN_VERSION = 'XML_INPUT_GENERATOR_V15_FLAT_ONLY_NEW_XML_STRUCTURE_GENDER_UPPERCASE_2026_06_03'
+RUN_VERSION = 'XML_INPUT_GENERATOR_V16_FLAT_ONLY_CREDITO_ESTADO_CV_2026_06_04'
 RUN_DATE = '2026-05-14'
 FLAT_XML_DIR = '02_inputs_xml_flat'
 
@@ -59,7 +59,7 @@ GENDER_VALUES = ['MASCULINO', 'FEMENINO']
 
 DOMAIN_RULES = {
     # El requerimiento original traía V,C; para este paquete se agrega D por la regla de negocio indicada por el usuario.
-    'creditoEstado': {'C', 'D'},
+    'creditoEstado': {'C', 'V'},
     'creditoBanca': {'BANCA_PERSONAS', 'BANCA_TRABAJADORES'},
     'creditoTipoCliente': {'CN', 'CE', 'CR'},
     'creditoRegion': {'METROPOLITANA', 'NOR_ORIENTE', 'SUR_OCCIDENTE'},
@@ -564,14 +564,14 @@ def assign_case_overrides(ctx: dict, route: dict) -> None:
     gen = ctx['general_decisions']
     if ctx['final_output_class_id'] == 'CONTROL_BT':
         ctx['tipo_cliente'] = 'CE'
-        ctx['tipo_cliente_rule'] = 'CE: cliente existente; al menos un crédito con estado D.'
-        ctx['current_credit_status'] = 'D'
-        ctx['history_credit_status'] = 'D'
+        ctx['tipo_cliente_rule'] = 'CE: cliente existente; al menos un crédito con estado V.'
+        ctx['current_credit_status'] = 'V'
+        ctx['history_credit_status'] = 'V'
     elif gen.get('D02') == 'SI':
         ctx['tipo_cliente'] = 'CE'
-        ctx['tipo_cliente_rule'] = 'CE: cliente existente; al menos un crédito con estado D.'
-        ctx['current_credit_status'] = 'D'
-        ctx['history_credit_status'] = 'D'
+        ctx['tipo_cliente_rule'] = 'CE: cliente existente; al menos un crédito con estado V.'
+        ctx['current_credit_status'] = 'V'
+        ctx['history_credit_status'] = 'V'
     elif gen.get('D03') == 'SI':
         ctx['tipo_cliente'] = 'CR'
         ctx['tipo_cliente_rule'] = 'CR: cliente reactivado; historial con créditos y todos con estado C.'
@@ -980,7 +980,7 @@ def derive_tipo_cliente(creditos: list[dict], ctx: dict) -> str:
     states = [c['creditoEstado'] for c in creditos]
     if not states:
         return 'INDETERMINADO'
-    if any(s == 'D' for s in states):
+    if any(s == 'V' for s in states):
         return 'CE'
     if states and all(s == 'C' for s in states):
         return 'CR'
@@ -1321,7 +1321,7 @@ def main(limit: int|None=None) -> None:
                 'domain_failure_samples': domain_failure_samples,
                 'domain_values_observed': {f:dict(c) for f,c in domain_value_counters.items()},
                 'domain_rules': {f:sorted(list(v)) for f,v in DOMAIN_RULES.items()},
-                'note':'Validación muestral contra valores de requerimiento. creditoEstado permite C y D por regla de negocio indicada.'
+                'note':'Validación muestral contra valores de requerimiento. creditoEstado permite C y V por regla de negocio indicada.'
             }
             r2_summary={
                 'r2_cases_generated': r2_total,
@@ -1343,7 +1343,7 @@ def main(limit: int|None=None) -> None:
                 'tipo_cliente_validation_pass_rate': None if tipo_total==0 else round(tipo_pass_count/tipo_total,6),
                 'route_tipo_failures': dict(route_tipo_failures),
                 'business_rule': [
-                    'CE: al menos un crédito con estado D.',
+                    'CE: al menos un crédito con estado V.',
                     'CR: existen créditos y todos están en estado C.',
                     'CN: sin créditos en ActivoCrediticio.'
                 ]
@@ -1413,9 +1413,9 @@ def main(limit: int|None=None) -> None:
                     'Los valores alfanumericos del XML se serializan en mayuscula sin cambiar los nombres de etiquetas.',
                     'La fuerza comercial fija usa CNs/ABFs repetidos en todos los XMLs; se rotan 3 CNs candidatos por ruta para variar municipios sin perder control.',
                     'Los campos especialistaPatrono1/2/3 contienen nombres de patrono; el patrono del cliente se compara contra cualquiera de esos campos.',
-                    'Tipo de cliente se deriva con la regla CE/D, CR/C, CN/sin créditos en ActivoCrediticio.',
+                    'Tipo de cliente se deriva con la regla CE/V, CR/C, CN/sin créditos en ActivoCrediticio.',
                     'Las salidas aleatorias se consolidan en una fila por cliente con columnas codAbfActual1..N; codCnActual permanece unico.',
-                    'La carpeta plana contiene todos los XMLs juntos, ademas de las carpetas separadas por ruta.'
+                    'La carpeta plana contiene todos los XMLs juntos; no se genera carpeta separada por ruta.'
                 ]
             }
             generation_summary_json.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -1430,7 +1430,7 @@ def main(limit: int|None=None) -> None:
 Cambios incluidos:
 - especialistaPatrono1/2/3 ahora son nombres de patrono; se compara contra creditoPatrono.
 - Patronos finitos: patrono1, patrono2, patrono3, patrono4 y patrono_sin_especialista para forzar No.
-- Tipo cliente derivado por regla de negocio: CE si existe estado D; CR si historial todo C; CN sin historial HD.
+- Tipo cliente derivado por regla de negocio: CE si existe estado V; CR si historial todo C; CN sin historial HD.
 - Variación controlada por ruta: edad del cliente, patrono y municipio candidato cambian entre los {CASES_PER_ROUTE} casos sin romper la ruta.
 - Casos de selección aleatoria identificados en una fila por cliente con columnas codAbfActual1..N.
 - Estructura XML vigente con arg0, informacionGeneral, activoCrediticio, activoFinanciero y salidaBlaze/asignacionCredito.

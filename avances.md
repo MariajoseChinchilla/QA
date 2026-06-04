@@ -241,3 +241,23 @@
 
 ### Nota operativa
 - Se activo compresion NTFS para las carpetas generadas y se usaron enlaces duros en la carpeta plana para evitar duplicar el peso de los XMLs.
+
+## [2026-06-04 17:20] Avance: creditoEstado actualizado de D a V
+
+### Que se hizo
+- Se ajusto el generador principal para que `creditoEstado` use `V` en los clientes existentes `CE`.
+- Se elimino `D` del dominio permitido de `creditoEstado` en el generador y en el validador.
+- Se cambio la inferencia de tipo cliente: `CE` se deriva por presencia de estado `V`; `CR` se mantiene con historial solo en `C`.
+- Se regeneraron los 222,000 XMLs en la unica carpeta `02_inputs_xml_flat/`.
+- Se actualizaron expected outputs y reportes de validacion.
+
+### Resultado
+- Carpeta plana: 222,000 XMLs.
+- Carpeta separada `02_inputs_xml/`: no existe.
+- `tipo_cliente_validation_summary.json`: 222,000 casos generados, 222,000 pasan.
+- `domain_validation_summary.json`: `creditoEstado` permitido/observado con `C` y `V`; sin `D`.
+
+### Validacion posterior
+- Compilacion de scripts: PASS.
+- Regeneracion completa: PASS.
+- `python .\05_scripts\run_all_validations.py --limit 10000`: PASS, 0 issues.

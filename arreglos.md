@@ -268,3 +268,38 @@
 
 ### Estado
 - CORREGIDO
+
+## [2026-06-04 17:20] Arreglo: creditoEstado D reemplazado por V
+
+### Error detectado
+- Los XMLs de clientes existentes `CE` estaban usando `creditoEstado=D`.
+- El nuevo criterio pide reemplazar ese estado por `V` en todos los XMLs.
+
+### Causa probable
+- El generador principal todavia trataba `D` como estado valido para identificar clientes existentes.
+- El validador tambien aceptaba `D` dentro del dominio de `creditoEstado`.
+
+### Cambio aplicado
+- `creditoEstado` ahora permite solo `C` y `V` en el generador principal.
+- La derivacion de tipo cliente ahora usa `CE` cuando existe al menos un credito con estado `V`.
+- Los casos `CONTROL_BT` y las rutas con cliente existente ahora generan credito actual e historico con estado `V`.
+- El validador rechaza `D` y valida `CE` contra estado `V`.
+- Se regeneraron los 222,000 XMLs en `02_inputs_xml_flat/`.
+
+### Archivos modificados
+- `05_scripts/generate_inputs_100_v6.py`
+- `05_scripts/qa_validation_lib.py`
+- `02_inputs_xml_flat/`
+- `03_expected/expected_outputs.csv`
+- `04_validation/`
+- `README.txt`
+
+### Validacion posterior
+- `python -m py_compile .\05_scripts\generate_inputs_100_v6.py .\05_scripts\qa_validation_lib.py`
+- `python .\05_scripts\generate_inputs_100_v6.py`
+- `tipo_cliente_validation_summary.json`: 222,000/222,000 casos pasan.
+- `domain_validation_summary.json`: `creditoEstado` observado y permitido solo con `C` y `V`.
+- `python .\05_scripts\run_all_validations.py --limit 10000`: PASS, 0 issues.
+
+### Estado
+- CORREGIDO
