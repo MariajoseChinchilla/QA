@@ -26,7 +26,7 @@ EXPECTED = BASE / "03_expected" / "expected_outputs.csv"
 FLAT_DIR = BASE / "02_inputs_xml_flat"
 VALIDATION_DIR = BASE / "04_validation"
 CASES_PER_ROUTE = int(os.getenv("QA_BT_CASES_PER_ROUTE", "100"))
-RUN_VERSION = "XML_INPUT_GENERATOR_BT_FLAT_V2_2026_05_27"
+RUN_VERSION = "XML_INPUT_GENERATOR_BT_FLAT_V3_GENDER_STRUCTURE_2026_06_03"
 TREE_VERSION = "MOTOR_BT_DRAWIO_EXPANDED_V1"
 MAPPING_VERSION = "BT_FLAT_V1"
 
@@ -41,8 +41,42 @@ def esc(value: object) -> str:
     return escape("" if value is None else str(value), {'"': "&quot;"})
 
 
+def xml_value(value: object) -> str:
+    value_str = "" if value is None else str(value)
+    if not any(char.isalpha() for char in value_str):
+        return value_str
+    no_marks = "".join(
+        char for char in unicodedata.normalize("NFKD", value_str) if not unicodedata.combining(char)
+    )
+    return no_marks.upper()
+
+
 def tag(name: str, value: object) -> str:
-    return f"<{name}>{esc(value)}</{name}>"
+    return f"<{name}>{esc(xml_value(value))}</{name}>"
+
+
+def unlink_retry(path: Path, attempts: int = 8) -> None:
+    for attempt in range(attempts):
+        try:
+            path.unlink()
+            return
+        except FileNotFoundError:
+            return
+        except OSError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(0.25 * (attempt + 1))
+
+
+def write_text_retry(path: Path, text: str, attempts: int = 8) -> None:
+    for attempt in range(attempts):
+        try:
+            path.write_text(text, encoding="utf-8")
+            return
+        except OSError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(0.25 * (attempt + 1))
 
 
 def load_catalog() -> list[dict[str, str]]:
@@ -224,9 +258,9 @@ def by_code(cns: list[dict[str, object]]) -> dict[str, dict[str, object]]:
     return out
 
 
-def centro_xml(item: dict[str, object]) -> str:
+def centro_xml(item: dict[str, object], ctx: dict[str, object] | None = None) -> str:
     chunks = [
-        "<CentroDeNegocio>",
+        "<centroDeNegocio>",
         tag("cnCod", item["cod"]),
         tag("cnNombre", item["nombre"]),
         tag("cnEstado", item["estado"]),
@@ -236,26 +270,28 @@ def centro_xml(item: dict[str, object]) -> str:
     ]
     for item_abf in item["abfs"]:  # type: ignore[index]
         patronos = item_abf["patronos"]  # type: ignore[index]
+        asignado_genero = item_abf.get("genero", "MASCULINO")
+        if ctx and str(item["cod"]) == str(ctx.get("targetCnForGender", "")):
+            asignado_genero = ctx.get("targetAbfGenero", asignado_genero)
         chunks.extend(
             [
-                "<Abf>",
+                "<abf>",
                 tag("asignadoCod", item_abf["cod"]),
                 tag("asignadoEstado", item_abf["estado"]),
                 tag("asignadoEnVacacion", item_abf["vacacion"]),
                 tag("asignadoBanca", item_abf["banca"]),
                 tag("asignadoEdad", item_abf["edad"]),
+                tag("asignadoGenero", asignado_genero),
                 tag("especialistaPatrono1", patronos[0]),
                 tag("especialistaPatrono2", patronos[1]),
                 tag("especialistaPatrono3", patronos[2]),
                 tag("asignadoBolsonAcumulativo", "75000" if item_abf["bolson"] == "Deficit" else "150000"),
                 tag("asignadoBolsonLimExposicion", "100000"),
                 tag("asignadoBolsonEstado", item_abf["bolson"]),
-                tag("participanteCosechaCod", item["cod"] if item_abf["estado"] == "Alta" else "-1"),
-                tag("participanteCosechaVacacion", "0"),
-                "</Abf>",
+                "</abf>",
             ]
         )
-    chunks.append("</CentroDeNegocio>")
+    chunks.append("</centroDeNegocio>")
     return "".join(chunks)
 
 
@@ -283,14 +319,14 @@ def credito_xml(credito: dict[str, object]) -> str:
         "participanteLaborMunicipio",
         "participanteLaborVacacion",
         "participanteLaborTipo",
-        "cnCosechaCod",
-        "cnCosechaNombre",
-        "cnCosechaEstado",
-        "cnCosechaRegion",
-        "cnCosechaDepartamento",
-        "cnCosechaMunicipio",
+        "cosechaCodigoCn",
+        "cosechaNombreCn",
+        "cosechaEstadoCn",
+        "cosechaRegionCn",
+        "cosechaDepartamentoCn",
+        "cosechaMunicipioCn",
     ]
-    return "<Credito>" + "".join(tag(field, credito.get(field, "")) for field in fields) + "</Credito>"
+    return "<credito>" + "".join(tag(field, credito.get(field, "")) for field in fields) + "</credito>"
 
 
 def base_credit(
@@ -328,12 +364,12 @@ def base_credit(
         "participanteLaborMunicipio": target_cn["municipio"],
         "participanteLaborVacacion": "0",
         "participanteLaborTipo": "abf",
-        "cnCosechaCod": target_cn["cod"],
-        "cnCosechaNombre": target_cn["nombre"],
-        "cnCosechaEstado": target_cn["estado"],
-        "cnCosechaRegion": target_cn["region"],
-        "cnCosechaDepartamento": target_cn["departamento"],
-        "cnCosechaMunicipio": target_cn["municipio"],
+        "cosechaCodigoCn": target_cn["cod"],
+        "cosechaNombreCn": target_cn["nombre"],
+        "cosechaEstadoCn": target_cn["estado"],
+        "cosechaRegionCn": target_cn["region"],
+        "cosechaDepartamentoCn": target_cn["departamento"],
+        "cosechaMunicipioCn": target_cn["municipio"],
     }
 
 
@@ -478,6 +514,7 @@ def scenario(route: dict[str, str], case_number: int, global_number: int, cns_by
         "codCliente": str(80000000 + global_number),
         "dpiCliente": str(4000000000000 + global_number),
         "clienteEdad": str(35 + rng.randint(0, 3)),
+        "clienteGenero": cliente_genero,
         "clienteRegion": REGION,
         "clienteMunicipioVivienda": cliente_vivienda,
         "clienteMunicipioTrabajo": cliente_trabajo,
@@ -485,11 +522,13 @@ def scenario(route: dict[str, str], case_number: int, global_number: int, cns_by
         "clienteEstabaAsignadoAbf": assigned,
         "clienteEsCarteraDelCnCod": "1001" if assigned == "Sí" else "-1",
         "clienteEsCarteraDelAbfCod": "500001" if assigned == "Sí" else "-1",
-        "esTrabajadorInterno": es_trabajador_interno,
+        "clienteesTrabajadorBt": es_trabajador_interno,
         **abf_sugerido,
         "creditos": creditos,
         "codCnActual": target_cn_code,
         "codAbfsActuales": expected_abfs[:MAX_ABF_SLOTS],
+        "targetCnForGender": target_cn_code,
+        "targetAbfGenero": target_abf_genero,
         "codCnAnterior": "1001" if assigned == "Sí" else "-1",
         "codAbfAnterior": "500001" if assigned == "Sí" else "-1",
         "bolson": bolson,
@@ -568,6 +607,11 @@ def scenario_v2(route: dict[str, str], case_number: int, global_number: int, cns
     if "se conoce el municipio de vivienda o trabajo? = no" in norm:
         cliente_vivienda = "SIN_MUNICIPIO"
         cliente_trabajo = "SIN_MUNICIPIO"
+
+    cliente_genero = "Masculino"
+    target_abf_genero = "Masculino"
+    if route_r1 and "sin filtro de genero" in scope_norm:
+        target_abf_genero = "Femenino"
 
     assigned = "Sí" if "el cliente esta asignado a un abf de alta? = si" in norm else "No"
     cliente_es_sugerido = "Si" if "sugerido mensual? = si" in norm else "No"
@@ -665,6 +709,7 @@ def scenario_v2(route: dict[str, str], case_number: int, global_number: int, cns
         "codCliente": str(80000000 + global_number),
         "dpiCliente": str(4000000000000 + global_number),
         "clienteEdad": str(35 + rng.randint(0, 3)),
+        "clienteGenero": cliente_genero,
         "clienteRegion": REGION,
         "clienteMunicipioVivienda": cliente_vivienda,
         "clienteMunicipioTrabajo": cliente_trabajo,
@@ -673,11 +718,13 @@ def scenario_v2(route: dict[str, str], case_number: int, global_number: int, cns
         "clienteEsCarteraDelCnCod": "1001" if assigned == "Sí" else "-1",
         "clienteFueDesembolsadoEnElUltimoMes": cliente_ultimo_mes,
         "clienteEsCarteraDelAbfCod": "500001" if assigned == "Sí" else "-1",
-        "esTrabajadorInterno": es_trabajador_interno,
+        "clienteesTrabajadorBt": es_trabajador_interno,
         **abf_sugerido,
         "creditos": creditos,
         "codCnActual": target_cn_code,
         "codAbfsActuales": expected_abfs[:MAX_ABF_SLOTS],
+        "targetCnForGender": target_cn_code,
+        "targetAbfGenero": target_abf_genero,
         "codCnAnterior": "1001" if assigned == "Sí" else "-1",
         "codAbfAnterior": "500001" if assigned == "Sí" else "-1",
         "bolson": bolson,
@@ -689,11 +736,12 @@ def scenario_v2(route: dict[str, str], case_number: int, global_number: int, cns
     }
 
 
-def build_xml(ctx: dict[str, object], static_activo_financiero: str) -> str:
+def build_xml(ctx: dict[str, object], cns: list[dict[str, object]]) -> str:
     solicitud_fields = [
         "clienteNombre",
         "clienteCod",
         "clienteEdad",
+        "clienteGenero",
         "clienteRegion",
         "clienteMunicipioVivienda",
         "clienteMunicipioTrabajo",
@@ -711,25 +759,32 @@ def build_xml(ctx: dict[str, object], static_activo_financiero: str) -> str:
         "abfSugeridoMunicipio",
         "abfSugeridoOportunidad",
         "clienteDpi",
-        "esTrabajadorInterno",
+        "clienteesTrabajadorBt",
     ]
     data = dict(ctx)
     data["clienteNombre"] = f"Cliente QA BT {ctx['case_id']}"
     data["clienteCod"] = ctx["codCliente"]
     data["clienteDpi"] = ctx["dpiCliente"]
+    first_credit = (ctx["creditos"] or [{}])[0]  # type: ignore[index]
+    activo_financiero = "<activoFinanciero>" + "".join(centro_xml(item, ctx) for item in cns) + "</activoFinanciero>"
     xml = [
-        '<?xml version="1.0" encoding="UTF-8"?>',
         '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:rule="http://bar.foo.com/rule">',
-        "<soapenv:Header/><soapenv:Body><rule:entryPointAdmonCarteraV2><solicitud>",
+        "<soapenv:Header/><soapenv:Body><rule:entryPointAdmonCarteraV2><arg0>",
         "".join(tag(field, data.get(field, "")) for field in solicitud_fields),
-        "<InformacionGeneral>",
-        tag("fecha", "2026-05-27"),
-        "</InformacionGeneral>",
-        "<ActivoCrediticio>",
+        "<informacionGeneral>",
+        tag("fecha", "2026-06-03"),
+        "</informacionGeneral>",
+        "<activoCrediticio>",
         "".join(credito_xml(credito) for credito in ctx["creditos"]),  # type: ignore[arg-type]
-        "</ActivoCrediticio>",
-        static_activo_financiero,
-        "</solicitud></rule:entryPointAdmonCarteraV2></soapenv:Body></soapenv:Envelope>",
+        "</activoCrediticio>",
+        activo_financiero,
+        "<salidaBlaze><asignacionCredito>",
+        tag("clienteCredito", first_credit.get("creditoNo", "")),
+        tag("clienteDpi", data["clienteDpi"]),
+        tag("cnAsignadoAnteriorCod", ctx.get("codCnAnterior", "")),
+        tag("abfAsignadoAnteriorCod", ctx.get("codAbfAnterior", "")),
+        "</asignacionCredito></salidaBlaze>",
+        "</arg0></rule:entryPointAdmonCarteraV2></soapenv:Body></soapenv:Envelope>",
     ]
     return "".join(xml)
 
@@ -764,13 +819,13 @@ def main() -> int:
     catalog = load_catalog()
     cns = build_static_catalog()
     cns_by_code = by_code(cns)
-    static_activo_financiero = "<ActivoFinanciero>" + "".join(centro_xml(item) for item in cns) + "</ActivoFinanciero>"
-    static_hash = hashlib.sha256(static_activo_financiero.encode("utf-8")).hexdigest()
+    catalog_xml_fingerprint = "<activoFinanciero>" + "".join(centro_xml(item) for item in cns) + "</activoFinanciero>"
+    static_hash = hashlib.sha256(catalog_xml_fingerprint.encode("utf-8")).hexdigest()
 
     for path in [BASE / "00_catalogos", BASE / "01_manifest", FLAT_DIR, BASE / "03_expected", VALIDATION_DIR]:
         path.mkdir(parents=True, exist_ok=True)
     for stale in FLAT_DIR.glob("*.xml"):
-        stale.unlink()
+        unlink_retry(stale)
     write_static_catalogs(cns)
 
     manifest_fields = [
@@ -843,7 +898,7 @@ def main() -> int:
             case_id = str(ctx["case_id"])
             xml_name = f"{case_id}.xml"
             rel_xml = f"02_inputs_xml_flat/{xml_name}"
-            xml = build_xml(ctx, static_activo_financiero)
+            xml = build_xml(ctx, cns)
             (FLAT_DIR / xml_name).write_text(xml, encoding="utf-8")
             if not first_xml:
                 first_xml = xml

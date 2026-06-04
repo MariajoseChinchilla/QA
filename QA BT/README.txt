@@ -12,7 +12,7 @@ Contenido principal:
 Resumen de la version actual:
 - Fuente del arbol: 00_catalogos/Motor_BT.drawio.xml.
 - Extractor: extract_bt_routes_from_drawio.py.
-- Generador: XML_INPUT_GENERATOR_BT_FLAT_V2_2026_05_27.
+- Generador: XML_INPUT_GENERATOR_BT_FLAT_V3_GENDER_STRUCTURE_2026_06_03.
 - Rutas expandidas: 82.
 - Casos por ruta: 100.
 - XMLs totales: 8,200.
@@ -22,6 +22,9 @@ Resumen de la version actual:
 Nota de estructura:
 - Esta variante BT no crea 02_inputs_xml ni subcarpetas por regla/ruta.
 - La unica carpeta de entradas es 02_inputs_xml_flat.
+- Los XMLs usan la estructura del ejemplo con arg0, informacionGeneral, activoCrediticio, activoFinanciero, salidaBlaze y asignacionCredito.
+- Se agregaron clienteGenero y asignadoGenero en el orden del ejemplo.
+- Los valores textuales se escriben en mayuscula; los nombres de etiquetas se mantienen sin cambios.
 
 Restricciones BT aplicadas:
 - Cliente existente => tipo CE y al menos un credito en estado D.
